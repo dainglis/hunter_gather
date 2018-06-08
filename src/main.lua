@@ -2,6 +2,7 @@
 -- Created by David Inglis
 -- 2018
 
+require"Command"
 require"Forest"
 require"Tree"
 require"Table"
@@ -12,7 +13,7 @@ m = love.mouse
 w = love.window
 
 DEBUG = true
-TREEBUG = true
+TREEBUG = false
 
 WINDOW_WIDTH= 1366
 WINDOW_HEIGHT= 768
@@ -33,9 +34,6 @@ CONSOLE = "console"
 MOVEMENT = "movement"
 keymode = CONSOLE
 
-close = {"close", "quit", "exit"}
-reset = {"reset", "clear"}
-cut = {"cut"}
 
 textstring = ""
 
@@ -58,6 +56,21 @@ function init()
     moveSpeed =2 
 
 end
+
+--tokenizeString
+--input:
+--  string str
+--output:
+--  table tokens
+--    all tokens of string delimited by the space character, "%s"
+function tokenizeString(str)
+    local tokens = table 
+    for word in string.gmatch(str, "%a+") do
+        tokens:insert(word)
+    end
+    return tokens
+end
+
 
 function convert_position(origin, value, offset)
     return origin - (value/2 - offset) * scale
@@ -112,7 +125,7 @@ end
 -- Randomly generates and draws a forest southwest of the origin
 function generateForest()
     largeForest = Forest
-    forestgen = true
+    forestGenerated = true
 
     print("Generating forest...")
 
@@ -177,14 +190,6 @@ function clearText()
     textstring = ""
 end
 
-function promptCommand(cmd)
-    if tableContains(reset, cmd) then
-        init()
-    elseif tableContains(close, cmd) then
-        w.close()
-    end
-end
-
 function love.mousereleased(x, y, button, istouch)
     modX, modY = convertPositionMouse(x, y)
     checkClosestTree(modX, modY)
@@ -205,6 +210,10 @@ function love.keypressed(key, scancode, isrepeat)
             keymode = MOVEMENT
             clearText()
         elseif key == "return" then
+            nt = tokenizeString(textstring)
+            for i=1,nt:getn() do
+                print(nt[i])
+            end
             promptCommand(textstring)
             clearText()
         elseif key == "backspace" then
@@ -242,6 +251,7 @@ function love.load()
 end
 
 function love.draw()
+
     -- mouse cursor square
     mouseX, mouseY = m.getPosition()
     relativeX, relativeY = convertPositionMouse()
@@ -251,29 +261,8 @@ function love.draw()
     -- coordinates of relative center
     centerX, centerY = convertPosition(0, 0)
 
-    if DEBUG == true then
-        debugTable = table
-
-        debugTable:insert("fps: " .. love.timer.getFPS())
-        debugTable:insert("xmouse: (" .. mouseX - originX .. ", " .. mouseY - originY .. ")")
-        debugTable:insert("rmouse: (" .. relativeX .. ", " .. relativeY .. ")")
-        debugTable:insert("scale: " .. scale)
-
-        if forestgen == true then
-            debugTable:insert("forest size: " .. largeForest:size())
-        end
-
-        debugTable:insert("movespeed: " .. moveSpeed)
-        debugTable:insert("keymode: " .. keymode)
-
-        for i = 1, debugTable:getn() do
-            g.print(debugTable[1], 10, -5 + 15*i)
-            debugTable:remove(1)
-        end
-
-        --center dot
-        g.rectangle('line', centerX, centerY, 2, 2)
-    end
+    --sets building colours
+    g.setColor(1, 1, 1)
 
     -- longhouse
     baseX, baseY = convertPositionRectangle(baseWidth, baseHeight)
@@ -314,13 +303,43 @@ function love.draw()
 
     end
 
-    g.setColor(1, 1, 1)
+    -- 
+    if nightActive then
+        g.setColor(0,0,0,0.7)
+        g.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+    end
 
-    if TREEBUG == true then
+    --sets text color
+    g.setColor(1, 1, 1)
+    if TREEBUG then
         for i = -2000, 2000, 6 do
             x, y = convertPosition(i, (math.floor(27000/(i + 505)) - 350))
             g.points(x, y)
         end
+    end
+
+    if DEBUG then
+        debugTable = table
+
+        debugTable:insert("fps: " .. love.timer.getFPS())
+        debugTable:insert("xmouse: (" .. mouseX - originX .. ", " .. mouseY - originY .. ")")
+        debugTable:insert("rmouse: (" .. relativeX .. ", " .. relativeY .. ")")
+        debugTable:insert("scale: " .. scale)
+
+        if forestGenerated then
+            debugTable:insert("forest size: " .. largeForest:size())
+        end
+
+        debugTable:insert("movespeed: " .. moveSpeed)
+        debugTable:insert("keymode: " .. keymode)
+
+        for i = 1, debugTable:getn() do
+            g.print(debugTable[1], 10, -5 + 15*i)
+            debugTable:remove(1)
+        end
+
+        --center dot
+        g.rectangle('line', centerX, centerY, 2, 2)
     end
 
     if keymode == CONSOLE then
