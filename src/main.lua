@@ -18,12 +18,15 @@ WINDOW_WIDTH= 1366
 WINDOW_HEIGHT= 768
 
 SCALE_MIN = 0.7
-SCALE_MAX = 5
+SCALE_MAX = 4.5 
 
 originX = WINDOW_WIDTH/2
 originY = WINDOW_HEIGHT/2
 scale = 1
 scaleModifier = 0.05
+
+nightActive = false
+nightDarkness = 0
 
 prompt = "$ "
 CONSOLE = "console"
