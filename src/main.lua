@@ -4,13 +4,25 @@
 
 require"Command"
 require"Forest"
+require"Human"
 require"Tree"
 require"Table"
+require"Position"
 
 g = love.graphics
 k = love.keyboard
 m = love.mouse
 w = love.window
+
+--Colours for drawing
+cWhite = {1, 1, 1}
+cHumanYellow = {244/255, 214/255, 66/255}
+cTreeGreen = {0, 0.9, 0}
+cTreeTrunk = {0.45, 0.2, 0.05}
+cTreeSelected = {0.8, 0.8, 0.8}
+cFireRed = {1, 0.4, 0.4}
+
+cNightOverlay = {0, 0, 0, 0.7}
 
 DEBUG = true
 TREEBUG = false
@@ -25,16 +37,18 @@ originX = WINDOW_WIDTH/2
 originY = WINDOW_HEIGHT/2
 scale = 1
 scaleModifier = 0.05
+mouseX = 0; mouseY = 0; relativeX = 0; relativeY = 0
 
 nightActive = false
 nightDarkness = 0
 
-prompt = "$ "
 CONSOLE = "console"
 MOVEMENT = "movement"
-keymode = CONSOLE
+keymode = MOVEMENT
 
-
+debugTable = {}
+consoleTable = {memory = 5}
+prompt = "$ "
 textstring = ""
 
 function init()
@@ -57,47 +71,12 @@ function init()
 
 end
 
---tokenizeString
---input:
---  string str
---output:
---  table tokens
---    all tokens of string delimited by the space character, "%s"
-function tokenizeString(str)
-    local tokens = table 
-    for word in string.gmatch(str, "%a+") do
-        tokens:insert(word)
+function toggleNight()
+    if nightActive then
+        nightActive = false
+    else
+        nightActive = true
     end
-    return tokens
-end
-
-
-function convert_position(origin, value, offset)
-    return origin - (value/2 - offset) * scale
-end
-
-function convertPositionMouse()
-    relX = math.floor((mouseX - originX)/scale - offsetX)
-    relY = math.floor((mouseY - originY)/scale - offsetY)
-    return relX, relY
-end
-
-function convertPositionRectangle(absX, absY)
-    relX = originX - (absX/2 - offsetX) * scale
-    relY = originY - (absY/2 - offsetY) * scale
-    return relX, relY
-end
-
-function convertPositionPoint(absX, absY)
-    relX = originX - (absX - offsetX) * scale
-    relY = originY - (absY - offsetY) * scale
-    return relX, relY
-end
-
-function convertPosition(absX, absY)
-    relX = originX + (absX + offsetX) * scale
-    relY = originY + (absY + offsetY) * scale
-    return relX, relY
 end
 
 function modifyScaleIn()
@@ -120,6 +99,15 @@ function checkSpeed()
     else
         moveSpeed = 2
     end
+end
+
+function generateHuman()
+    local manStartX = 15
+    local manStartY = 22
+
+    man = Human:new{id=123, curX=manStartX, curY=manStartY, name="Pal"}
+    local x, y = man:getPosition()
+    print("Man created: " .. man.name .. " (" .. x .. ", " .. y .. ")")
 end
 
 -- Randomly generates and draws a forest southwest of the origin
@@ -146,7 +134,6 @@ function generateForest()
         treeX = math.random(-500, 670)
         treeY = math.floor(29000/(treeX + 505) - 350)
         largeForest:newTree(treeX + treeOffsetX, treeY + treeOffsetY, treeRadius)
-
         if DEBUG then
            -- print("new tree: (" .. treeX + treeOffsetX .. " " .. treeY + treeOffsetY .. " " .. treeRadius .. ")")
         end
@@ -166,33 +153,14 @@ function generateForest()
     end
 end
 
-function cutRandomTree()
-    print("cutting random tree...")
-    toCut = math.random(1, largeForest:size())
-    largeForest.trees[toCut].cut = true
-end
-
-function checkClosestTree(x, y)
-    marker = 0
-    dist = 50 -- MAGIC
-
-    for i = 1, largeForest:size() do
-        curTree = largeForest.trees[i]
-        curDist = math.floor(math.sqrt((curTree.x - x) ^ 2 + (curTree.y - y) ^ 2))
-
-        if curDist < dist and curDist <= curTree.r then
-            marker = i
-        end
-    end
-end
-
 function clearText()
     textstring = ""
 end
 
 function love.mousereleased(x, y, button, istouch)
+    man:startMovement(relativeX, relativeY)
     modX, modY = convertPositionMouse(x, y)
-    checkClosestTree(modX, modY)
+    largeForest:checkClosestTree(modX, modY)
 end
 
 function love.textinput(text)
@@ -200,7 +168,7 @@ function love.textinput(text)
         textstring = textstring .. text
 
         --DEBUG
-        print(textstring)
+        --print(textstring)
     end
 end
 
@@ -210,10 +178,7 @@ function love.keypressed(key, scancode, isrepeat)
             keymode = MOVEMENT
             clearText()
         elseif key == "return" then
-            nt = tokenizeString(textstring)
-            for i=1,nt:getn() do
-                print(nt[i])
-            end
+            pushConsole(consoleTable, textstring)
             promptCommand(textstring)
             clearText()
         elseif key == "backspace" then
@@ -226,7 +191,7 @@ function love.keypressed(key, scancode, isrepeat)
             init()
         end
         if key == "c" then
-            cutRandomTree()
+            largeForest:cutRandomTree()
         end
     end
 end
@@ -248,10 +213,26 @@ function love.load()
 
     init()
     generateForest()
+    generateHuman()
+end
+
+function love.update(dt)
+    debugTable["fps"] = love.timer.getFPS()
+    debugTable["xmouse"] = "(" .. mouseX - originX .. ", " .. mouseY - originY .. ")"
+    debugTable["rmouse"] = "(" .. relativeX .. ", " .. relativeY .. ")"
+    debugTable["scale"] = scale
+
+    if forestGenerated then
+        debugTable["forest"] = largeForest:size()
+    end
+
+    debugTable["movespeed"] = moveSpeed
+    debugTable["keymode"] = keymode
+
+    man:updateMovement()
 end
 
 function love.draw()
-
     -- mouse cursor square
     mouseX, mouseY = m.getPosition()
     relativeX, relativeY = convertPositionMouse()
@@ -262,7 +243,7 @@ function love.draw()
     centerX, centerY = convertPosition(0, 0)
 
     --sets building colours
-    g.setColor(1, 1, 1)
+    g.setColor(cWhite)
 
     -- longhouse
     baseX, baseY = convertPositionRectangle(baseWidth, baseHeight)
@@ -278,12 +259,12 @@ function love.draw()
     -- firepit
     fireModX, fireModY = convertPosition(fireX, fireY)
     fireModRadius = fireRadius * scale
-    g.setColor(1, 0.4, 0.4)
+    g.setColor(cFireRed)
     g.circle('line', fireModX, fireModY, fireModRadius)
 
     -- draws forest
     for f = 1, largeForest:size() do
-        g.setColor(0, 0.9, 0)
+        g.setColor(cTreeGreen)
         curTree = largeForest.trees[f]
 
         treeX, treeY = convertPosition(curTree.x, curTree.y)
@@ -291,26 +272,30 @@ function love.draw()
         if curTree.cut == false then
             treeR = curTree.r * scale
         else 
-            g.setColor(0.45, 0.2, .05)
+            g.setColor(cTreeTrunk)
             treeR = math.floor(curTree.r/3) * scale
         end
 
-        if f == marker then
-            g.setColor(0,0,1)
+        if f == largeForest.marker then
+            g.setColor(cTreeSelected)
         end
 
         g.circle('line', treeX, treeY, treeR)
-
     end
 
-    -- 
+    g.setColor(cHumanYellow)
+    cManX, cManY = convertPosition(man:getPosition())
+    g.circle('fill', cManX, cManY, 4 * scale)
+
+    --SCREEN OVERLAYS
+    --draws nighttime overlay 
     if nightActive then
-        g.setColor(0,0,0,0.7)
+        g.setColor(cNightOverlay)
         g.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
     end
 
     --sets text color
-    g.setColor(1, 1, 1)
+    g.setColor(cWhite)
     if TREEBUG then
         for i = -2000, 2000, 6 do
             x, y = convertPosition(i, (math.floor(27000/(i + 505)) - 350))
@@ -318,24 +303,14 @@ function love.draw()
         end
     end
 
+    --draws topleft debug menu
     if DEBUG then
-        debugTable = table
-
-        debugTable:insert("fps: " .. love.timer.getFPS())
-        debugTable:insert("xmouse: (" .. mouseX - originX .. ", " .. mouseY - originY .. ")")
-        debugTable:insert("rmouse: (" .. relativeX .. ", " .. relativeY .. ")")
-        debugTable:insert("scale: " .. scale)
-
-        if forestGenerated then
-            debugTable:insert("forest size: " .. largeForest:size())
-        end
-
-        debugTable:insert("movespeed: " .. moveSpeed)
-        debugTable:insert("keymode: " .. keymode)
-
-        for i = 1, debugTable:getn() do
-            g.print(debugTable[1], 10, -5 + 15*i)
-            debugTable:remove(1)
+        spacing = 1 
+        for key, val in pairs(debugTable) do
+            if val ~= nil then
+                g.print(key .. ": " .. val, 10, 15 * spacing - 5)
+                spacing = spacing + 1
+            end
         end
 
         --center dot
@@ -345,6 +320,11 @@ function love.draw()
     if keymode == CONSOLE then
         --key input display
         g.print(prompt .. textstring, 10, WINDOW_HEIGHT - 25) 
+
+        for i=1, table.getn(consoleTable) do
+            g.print("   " .. consoleTable[i], 10, WINDOW_HEIGHT - 25 - 15*i)
+        end
+
     elseif keymode == MOVEMENT then
         -- MOVEMENT KEYS
         if k.isDown('c') then
