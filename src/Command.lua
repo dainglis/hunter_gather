@@ -107,6 +107,8 @@ function tokenizeString(str)
     return tokens
 end
 
+--pushConsole
+--
 function pushConsole(obj, line)
     local args = tokenizeString(line)
     table.insert(obj, 1, table.concat(args, " "))

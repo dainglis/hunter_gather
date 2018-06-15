@@ -1,14 +1,13 @@
 -- Human.lua
 -- Contains Human object definition and related methods
-Human = {id, name, curX = 0, curY= 0, newX, newY, changeX, changeY, dist, movement, speed}
+Human = {id, name, curX, curY, newX, newY, changeX, changeY, dist, movement, speed}
 
-function Human:new(obj)
-    obj = obj or Human 
+function Human:new(id, curX, curY, name)
+    --obj = obj or Human 
+    local obj = {id=id, curX=curX, curY=curY, name=name, 
+            newX=0, newY=0, changeX=0, changeY=0, dist=0, movement=false, speed=3}
     setmetatable(obj, self)
     self.__index = self
-
-    obj.movement = false
-    obj.speed = 3
 
     return obj
 end

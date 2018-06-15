@@ -3,6 +3,7 @@
 -- 2018
 
 require"Command"
+require"Console"
 require"Forest"
 require"Human"
 require"Tree"
@@ -101,18 +102,24 @@ function checkSpeed()
     end
 end
 
+function generateConsole()
+    -- change magic numbers
+    cWindow = ConsoleWindow:new(20, 508, 620, 240)
+    print("Console generated, (" .. cWindow.x .. ", " .. cWindow.y .. ")")
+end
+
 function generateHuman()
     local manStartX = 15
     local manStartY = 22
 
-    man = Human:new{id=123, curX=manStartX, curY=manStartY, name="Pal"}
+    man = Human:new(5, manStartX, manStartY, "Tim")
     local x, y = man:getPosition()
-    print("Man created: " .. man.name .. " (" .. x .. ", " .. y .. ")")
+    print("Man generated, " .. man.name .. " (" .. x .. ", " .. y .. ")")
 end
 
 -- Randomly generates and draws a forest southwest of the origin
 function generateForest()
-    largeForest = Forest
+    largeForest = Forest:new()
     forestGenerated = true
 
     print("Generating forest...")
@@ -134,9 +141,7 @@ function generateForest()
         treeX = math.random(-500, 670)
         treeY = math.floor(29000/(treeX + 505) - 350)
         largeForest:newTree(treeX + treeOffsetX, treeY + treeOffsetY, treeRadius)
-        if DEBUG then
-           -- print("new tree: (" .. treeX + treeOffsetX .. " " .. treeY + treeOffsetY .. " " .. treeRadius .. ")")
-        end
+     -- print("new tree: (" .. treeX + treeOffsetX .. " " .. treeY + treeOffsetY .. " " .. treeRadius .. ")")
     end
 
     -- generate sporadic trees in a linear (square) pattern
@@ -147,10 +152,9 @@ function generateForest()
         treeRadius = math.random(5, 18)
 
         largeForest:newTree(treeX, treeY, treeRadius)
-        if DEBUG then
-            --print("new tree: (" .. treeX .. " " .. treeY .. " " .. treeRadius .. ")")
-        end
+      --print("new tree: (" .. treeX .. " " .. treeY .. " " .. treeRadius .. ")")
     end
+    print("... generated a forest with " .. largeForest:size() .. " trees")
 end
 
 function clearText()
@@ -166,9 +170,6 @@ end
 function love.textinput(text)
     if keymode == CONSOLE then  
         textstring = textstring .. text
-
-        --DEBUG
-        --print(textstring)
     end
 end
 
@@ -185,7 +186,7 @@ function love.keypressed(key, scancode, isrepeat)
             textstring = string.sub(textstring, 1, -2)
         end
     elseif keymode == MOVEMENT then
-        if key == "escape" then
+        if key == "escape" or key == "return" then
             keymode = CONSOLE
         elseif key == "backspace" then
             init()
@@ -212,6 +213,7 @@ function love.load()
     print("\nWelcome to Hunter/Gather")
 
     init()
+    generateConsole()
     generateForest()
     generateHuman()
 end
@@ -237,7 +239,6 @@ function love.draw()
     mouseX, mouseY = m.getPosition()
     relativeX, relativeY = convertPositionMouse()
 
-    g.rectangle('line', mouseX, mouseY, 2, 2, 0)
 
     -- coordinates of relative center
     centerX, centerY = convertPosition(0, 0)
@@ -319,16 +320,23 @@ function love.draw()
 
     if keymode == CONSOLE then
         --key input display
-        g.print(prompt .. textstring, 10, WINDOW_HEIGHT - 25) 
+        --g.print(prompt .. textstring, 10, WINDOW_HEIGHT - 25) 
 
         for i=1, table.getn(consoleTable) do
-            g.print("   " .. consoleTable[i], 10, WINDOW_HEIGHT - 25 - 15*i)
+--            g.print("   " .. consoleTable[i], 10, WINDOW_HEIGHT - 25 - 15*i)
         end
+        g.setColor(cNightOverlay)
+        g.rectangle('fill', cWindow.x, cWindow.y, cWindow.width, cWindow.height)
+        g.setColor(cWhite)
+        g.rectangle('line', cWindow.x, cWindow.y, cWindow.width, cWindow.height)
+
+        g.print(prompt .. textstring, 
+                cWindow.x + ConsoleWindow.OFFSET_x, cWindow.y + cWindow.height - ConsoleWindow.OFFSET_y)
 
     elseif keymode == MOVEMENT then
         -- MOVEMENT KEYS
         if k.isDown('c') then
-            cutRandomTree()
+            largeForest:cutRandomTree()
         end
 
         if k.isDown('z') then
@@ -349,4 +357,7 @@ function love.draw()
             offsetY = offsetY - moveSpeed
         end
     end
+    
+    --displays cursor
+    g.rectangle('line', mouseX, mouseY, 2, 2, 0)
 end

@@ -2,6 +2,14 @@
 -- Contains Forest object definition and related methods
 Forest = {trees = {}, marker}
 
+function Forest:new()
+    local obj = {trees = {}, marker}
+    setmetatable(obj, self)
+    self.__index = self
+    
+    return obj
+end
+
 function Forest:addTree(t)
     table.insert(self.trees, t)
 end
