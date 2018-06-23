@@ -1,16 +1,19 @@
 -- Command.lua
 -- Contains functions and tables for console commands
-on = {"on", "true", "enable", "active", "-t"}
-off = {"off", "false", "disable", "inactive", "-f"}
 
-close = {"close", "quit", "exit"}
-reset = {"reset", "clear"}
-cut = {"cut"}
-toggle = {"toggle"}
-time = {"time", "day", "night"}
-debug = {"debug"}
-night = {"night"}
-treebug = {"treebug"}
+Commands = {
+    ["on"] = {"on", "true", "enable", "active", "-t"},
+    ["off"] = {"off", "false", "disable", "inactive", "-f"},
+    ["close"] = {"close", "quit", "exit"},
+    ["reset"] = {"reset", "clear"},
+    ["cut"] = {"cut"},
+    ["toggle"] = {"toggle"},
+    ["time"] = {"time", "day", "night"},
+    ["debug"] = {"debug"},
+    ["night"] = {"night"},
+    ["cagalog"] = {"catalog", "catalogue"},
+    ["treebug"] = {"treebug"}  
+}
 
 -- promptCommand
 -- input: string (cmd)
@@ -22,39 +25,43 @@ function promptCommand(cmd)
     local args = tokenizeString(cmd)
     local argmax = table.getn(args)
 
+    if table.getn(args) ~= 0 then
+        local rebuiltString = table.concat(args, " ")
+        Console:push(rebuiltString)
+    end
+
     -- RESET command
-    if tableContains(reset, args[1]) then
+    if tableContains(Commands["reset"], args[1]) then
         if table.getn(args) == 1 then
             init()
         else
             throwIncorrectUsage(args[1])
         end
     -- CLOSE window command
-    elseif tableContains(close, args[1]) then
+    elseif tableContains(Commands["close"], args[1]) then
         w.close()
     -- toggle DEBUG menu
-    elseif tableContains(debug, args[1]) then
+    elseif tableContains(Commands["debug"], args[1]) then
         if table.getn(args) ~= 2 then
             throwIncorrectUsage(args[1])
-        elseif tableContains(on, args[2]) then
+        elseif tableContains(Commands["on"], args[2]) then
             DEBUG = true
-        elseif tableContains(off, args[2]) then
+        elseif tableContains(Commands["off"], args[2]) then
             DEBUG = false
         else
             throwIncorrectUsage(args[1])
         end
     -- togle NIGHT overlay
-    elseif tableContains(night, args[1]) then
+    elseif tableContains(Commands["night"], args[1]) then
         if table.getn(args) ~= 2 then
             throwIncorrectUsage(args[1])
-        elseif tableContains(on, args[2]) then
+        elseif tableContains(Commands["on"], args[2]) then
             nightActive = true
-        elseif tableContains(off, args[2]) then
+        elseif tableContains(Commands["off"], args[2]) then
             nightActive = false
         else
             throwIncorrectUsage(args[1])
         end
-
     else
         throwUnknownCommand(args[1])
     end
@@ -72,7 +79,9 @@ end
 -- output: nil
 --   prints a message to console indicating that the command entered is in incorrect format
 function throwIncorrectUsage(cmd)
-    print("Incorrect usage of the '" .. cmd .. "' command")
+    local incorrect = "incorrect use of the '" .. cmd .. "' command"
+    print(incorrect)
+    Console:push(incorrect)
 end
 
 -- throwUnknownCommand
@@ -81,7 +90,9 @@ end
 --   prints a message to console indicating that the text entered is not a valid command
 function throwUnknownCommand(cmd)
     if cmd then
-        print("'" .. cmd .. "' is not a valid command")
+        local unknown = "'" .. cmd .. "' is not a valid command"
+        print(unknown)
+        Console:push(unknown)
     end
 end
 
@@ -93,12 +104,10 @@ function toggleBoolean(bool)
     return not bool
 end
 
---tokenizeString
---input:
---  string str
---output:
---  table tokens
---    all tokens of string delimited by the space character, %s
+-- tokenizeString
+-- input: string (str)
+-- output: table (tokens)
+--   all tokens of string delimited by the space character, %s
 function tokenizeString(str)
     local tokens = {} 
     for word in string.gmatch(str, "([^%s]+)") do
@@ -107,15 +116,12 @@ function tokenizeString(str)
     return tokens
 end
 
---pushConsole
---
-function pushConsole(obj, line)
-    local args = tokenizeString(line)
-    table.insert(obj, 1, table.concat(args, " "))
-    if (table.getn(obj) > obj.memory) then
-        table.remove(obj)
-    end
-    for i=1,table.getn(obj) do
-        print("Console " .. i .. ": " .. obj[i])
+--listCommands
+--input: nil
+--output: nil
+--  prints to console all of the available text commands and their aliases
+function listCommands()
+    for k in pairs(Commands) do
+        print("command: '" .. k .. "', aliases: '" .. table.concat(Commands[k], "', '") .. "'")
     end
 end

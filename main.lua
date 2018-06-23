@@ -2,18 +2,27 @@
 -- Created by David Inglis
 -- 2018
 
-require"Command"
-require"Console"
-require"Forest"
-require"Human"
-require"Tree"
-require"Table"
-require"Position"
+require"src.Command"
+require"src.Catalog"
+require"src.Console"
+require"src.Movement"
+require"src.Forest"
+require"src.Human"
+require"src.Tree"
+require"src.Table"
+require"src.Position"
 
 g = love.graphics
 k = love.keyboard
 m = love.mouse
 w = love.window
+
+print(love.filesystem.getIdentity())
+print(love.filesystem.getSaveDirectory())
+fontVeraSans = g.newFont(22)
+fontMono = g.newFont("/res/font/source-code-pro.regular.ttf")
+fontCourier = g.newFont("res/font/courier-prime-code.regular.ttf", 12)
+fontCourierItalics = g.newFont("res/font/courier-prime-code.italic.ttf", 14)
 
 --Colours for drawing
 cWhite = {1, 1, 1}
@@ -25,14 +34,19 @@ cFireRed = {1, 0.4, 0.4}
 
 cNightOverlay = {0, 0, 0, 0.7}
 
+DebugFlags = {}
+DebugFlags["debug"] = true
+print(DebugFlags["debug"])
+
 DEBUG = true
 TREEBUG = false
+WATERBUG = false
 
 WINDOW_WIDTH= 1366
 WINDOW_HEIGHT= 768
 
 SCALE_MIN = 0.7
-SCALE_MAX = 4.5 
+SCALE_MAX = 2.0 
 
 originX = WINDOW_WIDTH/2
 originY = WINDOW_HEIGHT/2
@@ -43,16 +57,11 @@ mouseX = 0; mouseY = 0; relativeX = 0; relativeY = 0
 nightActive = false
 nightDarkness = 0
 
-CONSOLE = "console"
-MOVEMENT = "movement"
-keymode = MOVEMENT
-
 debugTable = {}
-consoleTable = {memory = 5}
-prompt = "$ "
-textstring = ""
 
 function init()
+    keymode = MOVEMENT
+
     baseWidth = 55
     baseHeight = 25
     baseTrim = 2
@@ -68,8 +77,13 @@ function init()
     scale = 1
     offsetX = 0
     offsetY = 0
-    moveSpeed =2 
+    moveSpeed = 3
 
+    nightActive = false
+    nightDarkness = 0
+
+    generateHuman()
+    largeForest = generateForest()
 end
 
 function toggleNight()
@@ -80,32 +94,27 @@ function toggleNight()
     end
 end
 
-function modifyScaleIn()
-    if scale <= SCALE_MAX then
-        scale = scale + scaleModifier
-    end
-    checkSpeed()
-end
-
-function modifyScaleOut()
-    if scale >= SCALE_MIN then
-        scale = scale - scaleModifier
-    end
-    checkSpeed()
-end
-
-function checkSpeed()
-    if tostring(scale) == tostring(SCALE_MIN) then
-        moveSpeed = 6
-    else
-        moveSpeed = 2
+function resizeConsole() 
+    ConsoleWindow:setPosition(20, 708) -- x, y
+    ConsoleWindow:setSize(620, ConsoleWindow.OFFSET.Y + ConsoleWindow.OFFSET.X) -- width, height
+    for i=1, table.getn(Console.memory) do
+        if i < 14 then
+            ConsoleWindow:setPosition(ConsoleWindow.x, ConsoleWindow.y - 15)
+            ConsoleWindow:setSize(ConsoleWindow.width, ConsoleWindow.height + 15)
+        end
     end
 end
 
-function generateConsole()
-    -- change magic numbers
-    cWindow = ConsoleWindow:new(20, 508, 620, 240)
-    print("Console generated, (" .. cWindow.x .. ", " .. cWindow.y .. ")")
+function initConsole()
+    Console.text = ""
+    if Console.memory == nil then
+        Console.memory = {}
+    end
+
+    for i=1, table.getn(Console.memory) do
+        print(table.getn(Console.memory))
+    end
+    resizeConsole()
 end
 
 function generateHuman()
@@ -114,62 +123,25 @@ function generateHuman()
 
     man = Human:new(5, manStartX, manStartY, "Tim")
     local x, y = man:getPosition()
-    print("Man generated, " .. man.name .. " (" .. x .. ", " .. y .. ")")
+    print("man generated, " .. man.name .. " (" .. x .. ", " .. y .. ")")
 end
 
--- Randomly generates and draws a forest southwest of the origin
-function generateForest()
-    largeForest = Forest:new()
-    forestGenerated = true
 
-    print("Generating forest...")
-
-    math.randomseed(os.time())
-
-    -- generate thick patch in y = a/(x-p) + q pattern
-    manyTrees = math.random(155, 189)
-    for t = 1, manyTrees do
-        treeOffsetX = math.random(-190, 100)
-        treeOffsetY = math.random(-100, 200)
-
-        if (math.random() > 0.71) then
-            treeOffsetY = treeOffsetY + math.random(10,155)
-        end
-
-        treeRadius = math.random(5, 18)
-
-        treeX = math.random(-500, 670)
-        treeY = math.floor(29000/(treeX + 505) - 350)
-        largeForest:newTree(treeX + treeOffsetX, treeY + treeOffsetY, treeRadius)
-     -- print("new tree: (" .. treeX + treeOffsetX .. " " .. treeY + treeOffsetY .. " " .. treeRadius .. ")")
-    end
-
-    -- generate sporadic trees in a linear (square) pattern
-    manyMoreTrees = math.random(65, 90)
-    for t = 1, manyMoreTrees do
-        treeX = math.random(-1700, 1500)
-        treeY = math.random(-1300, 740)
-        treeRadius = math.random(5, 18)
-
-        largeForest:newTree(treeX, treeY, treeRadius)
-      --print("new tree: (" .. treeX .. " " .. treeY .. " " .. treeRadius .. ")")
-    end
-    print("... generated a forest with " .. largeForest:size() .. " trees")
-end
-
-function clearText()
-    textstring = ""
+function generateCatalog()
+    cat = Catalog:new()
+    cat:add("human", "Homo sapiens", "Human")
 end
 
 function love.mousereleased(x, y, button, istouch)
     man:startMovement(relativeX, relativeY)
-    modX, modY = convertPositionMouse(x, y)
+
+    local modX, modY = convertPositionMouse(x, y)
     largeForest:checkClosestTree(modX, modY)
 end
 
 function love.textinput(text)
     if keymode == CONSOLE then  
-        textstring = textstring .. text
+        Console:append(text)
     end
 end
 
@@ -177,13 +149,12 @@ function love.keypressed(key, scancode, isrepeat)
     if keymode == CONSOLE then
         if key == "escape" then
             keymode = MOVEMENT
-            clearText()
+            Console:clearText()
         elseif key == "return" then
-            pushConsole(consoleTable, textstring)
-            promptCommand(textstring)
-            clearText()
+            promptCommand(Console.text)
+            Console:clearText()
         elseif key == "backspace" then
-            textstring = string.sub(textstring, 1, -2)
+            Console:backspace()
         end
     elseif keymode == MOVEMENT then
         if key == "escape" or key == "return" then
@@ -206,16 +177,18 @@ function love.wheelmoved(x, y)
 end
 
 function love.load()
+    initConsole()
     w.setMode(WINDOW_WIDTH, WINDOW_HEIGHT)
     m.setVisible(false)
     k.setKeyRepeat(true)
 
-    print("\nWelcome to Hunter/Gather")
+    local welcome = "welcome to hunter/gather"
+    Console:push(welcome)
+    print(welcome)
+
+    generateCatalog()
 
     init()
-    generateConsole()
-    generateForest()
-    generateHuman()
 end
 
 function love.update(dt)
@@ -235,6 +208,8 @@ function love.update(dt)
 end
 
 function love.draw()
+   -- g.setFont(fontMono)
+
     -- mouse cursor square
     mouseX, mouseY = m.getPosition()
     relativeX, relativeY = convertPositionMouse()
@@ -271,7 +246,7 @@ function love.draw()
         treeX, treeY = convertPosition(curTree.x, curTree.y)
 
         if curTree.cut == false then
-            treeR = curTree.r * scale
+            treeR = curTree.size * scale
         else 
             g.setColor(cTreeTrunk)
             treeR = math.floor(curTree.r/3) * scale
@@ -297,9 +272,17 @@ function love.draw()
 
     --sets text color
     g.setColor(cWhite)
+
     if TREEBUG then
         for i = -2000, 2000, 6 do
             x, y = convertPosition(i, (math.floor(27000/(i + 505)) - 350))
+            g.points(x, y)
+        end
+    end
+
+    if WATERBUG then
+        for i = -1000, 1000, 6 do
+            x, y = convertPosition(i, 30 * math.sin(0.0272 * i) * math.cos(0.01 * i + math.random(0,1)) + (0.18 * i))
             g.points(x, y)
         end
     end
@@ -322,16 +305,22 @@ function love.draw()
         --key input display
         --g.print(prompt .. textstring, 10, WINDOW_HEIGHT - 25) 
 
-        for i=1, table.getn(consoleTable) do
---            g.print("   " .. consoleTable[i], 10, WINDOW_HEIGHT - 25 - 15*i)
-        end
-        g.setColor(cNightOverlay)
-        g.rectangle('fill', cWindow.x, cWindow.y, cWindow.width, cWindow.height)
-        g.setColor(cWhite)
-        g.rectangle('line', cWindow.x, cWindow.y, cWindow.width, cWindow.height)
+        resizeConsole()
 
-        g.print(prompt .. textstring, 
-                cWindow.x + ConsoleWindow.OFFSET_x, cWindow.y + cWindow.height - ConsoleWindow.OFFSET_y)
+        g.setColor(cNightOverlay)
+        g.rectangle('fill', ConsoleWindow.x, ConsoleWindow.y, ConsoleWindow.width, ConsoleWindow.height)
+        g.setColor(cWhite)
+        g.rectangle('line', ConsoleWindow.x, ConsoleWindow.y, ConsoleWindow.width, ConsoleWindow.height)
+
+        g.print(Console.PROMPT .. Console.text,
+                ConsoleWindow.x + ConsoleWindow.OFFSET.X, 
+                ConsoleWindow.y + ConsoleWindow.height - ConsoleWindow.OFFSET.Y)
+        for i = 1, Console:memSize() do
+            g.print(Console.memory[i], 
+                    ConsoleWindow.x + ConsoleWindow.OFFSET.X,
+                    ConsoleWindow.y + ConsoleWindow.height - ConsoleWindow.OFFSET.Y - (15 * i))
+        end
+
 
     elseif keymode == MOVEMENT then
         -- MOVEMENT KEYS
