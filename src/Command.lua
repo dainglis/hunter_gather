@@ -40,7 +40,7 @@ function promptCommand(cmd)
     -- CLOSE window command
     elseif tableContains(Commands["close"], args[1]) then
         w.close()
-    -- toggle DEBUG menu
+    -- toggle DEBUGFLAG commands
     elseif tableContains(Commands["debug"], args[1]) then
         if table.getn(args) ~= 2 then
             throwIncorrectUsage(args[1])
