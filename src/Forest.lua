@@ -36,9 +36,22 @@ end
 -- output: nil
 --   debugging function for 'cutting' a random tree
 function Forest:cutRandomTree()
-    print("Cutting random tree...")
-    toCut = math.random(1, self:size())
-    self.trees[toCut].cut = true
+--    print("Cutting random tree...")
+    if self:size() > 0 then
+        local toCut = math.random(1, self:size())
+        self.trees[toCut].cut = true
+    end
+end
+
+-- Forest:deleteRandomTree
+-- input: nil
+-- output: nil
+--   a random tree from the forest is removed completely
+function Forest:deleteRandomTree()
+    if self:size() > 0 then
+        local toDelete = math.random(1, self:size())
+        table.remove(self.trees, toDelete)
+    end
 end
 
 -- Forest:checkClosestTree

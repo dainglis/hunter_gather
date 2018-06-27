@@ -52,7 +52,7 @@ function Console:memSize()
     return table.getn(self.memory)
 end
 
--- Console:clerText()
+-- Console:clerText
 -- input: nil
 -- output: nil
 --   sets the Console objects 'text' field to the empty string
@@ -66,4 +66,14 @@ end
 --   removes the last character from the Console objects 'text' string
 function Console:backspace()
     Console.text = string.sub(Console.text, 1, -2)
+end
+
+-- Console:clear
+-- input: nil
+-- output: nil
+--   clears all lines of memory from the console
+function Console:clear()
+    while Console:memSize() > 0 do
+        table.remove(Console.memory)
+    end
 end

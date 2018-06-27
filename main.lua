@@ -148,7 +148,8 @@ function love.keypressed(key, scancode, isrepeat)
             init()
         end
         if key == "c" then
-            largeForest:cutRandomTree()
+            --largeForest:cutRandomTree()
+            largeForest:deleteRandomTree()
         end
     end
 end
@@ -239,7 +240,7 @@ function love.draw()
             treeR = curTree.size * scale
         else 
             g.setColor(cTreeTrunk)
-            treeR = math.floor(curTree.r/3) * scale
+            treeR = math.floor(curTree.size/3) * scale
         end
 
         if f == largeForest.marker then
@@ -316,7 +317,7 @@ function love.draw()
     elseif keymode == MOVEMENT then
         -- MOVEMENT KEYS
         if k.isDown('c') then
-            largeForest:cutRandomTree()
+         --   largeForest:cutRandomTree()
         end
 
         if k.isDown('z') then

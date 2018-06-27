@@ -7,7 +7,8 @@ Commands = {
 
     ["help"] = {"help", "commands", usage="", tip="prints help page"},
     ["close"] = {"close", "quit", "exit", usage="", tip="exits the game"},
-    ["reset"] = {"reset", "clear", usage="", tip="resets the game"},
+    ["reset"] = {"reset", usage="", tip="resets the game"},
+    ["clear"] = {"clear"},
     ["cut"] = {"cut", usage="", tip="cuts a random tree"},
     ["toggle"] = {"toggle"},
     ["night"] = {"night", usage="[on | off]", tip="toggles night overlay"},
@@ -55,8 +56,15 @@ function promptCommand(cmd)
         end
     -- display HELP dialogue
     elseif tableContains(Commands["help"], args[1]) then
-      listCommands()
+      if table.getn(args) == 1 then
+          Console:clear()
+          listCommands()
+      else
+          throwIncorrectUsage(args[1])
+      end
        -- uses Console:push
+    elseif tableContains(Commands["clear"], args[1]) then
+        Console:clear()
     -- togle NIGHT overlay
     elseif tableContains(Commands["night"], args[1]) then
         if table.getn(args) ~= 2 then
@@ -75,6 +83,26 @@ function promptCommand(cmd)
             nightFlag = false
         else
             throwIncorrectUsage(args[1])
+        end
+    elseif tableContains(Commands["cut"], args[1]) then
+        if table.getn(args) == 1 then
+            args[2] = "1"
+        end
+        
+        if table.getn(args) == 2 then
+            local reps = tonumber(args[2])
+            if reps == nil then
+                throwIncorrectUsage(args[1])
+            else
+                if reps > 100 then
+                    Console:push("that is far too many trees")
+                else 
+                    for i=1, reps do
+                        largeForest:cutRandomTree()
+                    end
+                    Console:push(tostring(reps) .. " trees have been felled")
+                end
+            end
         end
     else
         throwUnknownCommand(args[1])
