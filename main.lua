@@ -26,17 +26,17 @@ fontCourierItalics = g.newFont("res/font/courier-prime-code.italic.ttf", 14)
 
 --Colours for drawing
 cWhite = {1, 1, 1}
-cHumanYellow = {244/255, 214/255, 66/255}
-cTreeGreen = {0, 0.9, 0}
+cNightOverlay = {0, 0, 0, 0.7}
+cConsoleBackground = {0, 0, 0, 0.7}
+
+cHuman = {244/255, 214/255, 66/255}
+cHumanFade = {244/255, 214/255, 66/255, 0.5}
+cTree = {13/255, 170/255, 42/255}
+cTreeFade = {13/255, 170/255, 42/255, 0.15}
 cTreeTrunk = {0.45, 0.2, 0.05}
+cTreeTrunkFade = {0.45, 0.2, 0.05, 0.6}
 cTreeSelected = {0.8, 0.8, 0.8}
 cFireRed = {1, 0.4, 0.4}
-
-cNightOverlay = {0, 0, 0, 0.7}
-
---DEBUG = true
---TREEBUG = false
---WATERBUG = false
 
 WINDOW_WIDTH= 1366
 WINDOW_HEIGHT= 768
@@ -49,6 +49,7 @@ originY = WINDOW_HEIGHT/2
 scale = 1
 scaleModifier = 0.05
 mouseX = 0; mouseY = 0; relativeX = 0; relativeY = 0
+movement = {speed = 0, speedBase = 3, speedMod = 3}
 
 debugTable = {}
 debugFlagState = {}
@@ -73,7 +74,6 @@ function init()
     scale = 1
     offsetX = 0
     offsetY = 0
-    moveSpeed = 3
 
     debugFlagState["debug"] = true
 
@@ -192,7 +192,7 @@ function love.update(dt)
         debugTable["forest"] = largeForest:size()
     end
 
-    debugTable["movespeed"] = moveSpeed
+    debugTable["movespeed"] = movement.speed
     debugTable["keymode"] = keymode
 
     man:updateMovement()
@@ -231,28 +231,40 @@ function love.draw()
 
     -- draws forest
     for f = 1, largeForest:size() do
-        g.setColor(cTreeGreen)
-        curTree = largeForest.trees[f]
+        local curTree = largeForest.trees[f]
+        local treeX, treeY = convertPosition(curTree.x, curTree.y)
 
-        treeX, treeY = convertPosition(curTree.x, curTree.y)
+        if cTree == nil then
+            print("LOL")
+        end
+        local treeColor = cTree
+        local treeColorFade = cTreeFade
 
         if curTree.cut == false then
             treeR = curTree.size * scale
+            treeColor = cTree
+            treeColorFade = cTreeFade
         else 
-            g.setColor(cTreeTrunk)
             treeR = math.floor(curTree.size/3) * scale
+            treeColor = cTreeTrunk
+            treeColorFade = cTreeTrunkFade
         end
 
         if f == largeForest.marker then
             g.setColor(cTreeSelected)
         end
 
+        g.setColor(treeColorFade)
+        g.circle('fill', treeX, treeY, treeR)
+        g.setColor(treeColor)
         g.circle('line', treeX, treeY, treeR)
     end
 
-    g.setColor(cHumanYellow)
     cManX, cManY = convertPosition(man:getPosition())
+    g.setColor(cHumanFade)
     g.circle('fill', cManX, cManY, 4 * scale)
+    g.setColor(cHuman)
+    g.circle('line', cManX, cManY, 4 * scale)
 
     --SCREEN OVERLAYS
     --draws nighttime overlay 
@@ -294,12 +306,9 @@ function love.draw()
     end
 
     if keymode == CONSOLE then
-        --key input display
-        --g.print(prompt .. textstring, 10, WINDOW_HEIGHT - 25) 
-
         resizeConsole()
 
-        g.setColor(cNightOverlay)
+        g.setColor(cConsoleBackground)
         g.rectangle('fill', ConsoleWindow.x, ConsoleWindow.y, ConsoleWindow.width, ConsoleWindow.height)
         g.setColor(cWhite)
         g.rectangle('line', ConsoleWindow.x, ConsoleWindow.y, ConsoleWindow.width, ConsoleWindow.height)
@@ -313,29 +322,30 @@ function love.draw()
                     ConsoleWindow.y + ConsoleWindow.height - ConsoleWindow.OFFSET.Y - (15 * i))
         end
 
-
     elseif keymode == MOVEMENT then
         -- MOVEMENT KEYS
-        if k.isDown('c') then
-         --   largeForest:cutRandomTree()
-        end
-
         if k.isDown('z') then
             modifyScaleIn()
         elseif k.isDown('x') then
             modifyScaleOut()
         end
 
+        if k.isDown("lshift") then
+            movement.speed = movement.speedBase + movement.speedMod
+        else
+            movement.speed = movement.speedBase
+        end
+
         if k.isDown("left") then
-            offsetX = offsetX + moveSpeed
+            offsetX = offsetX + movement.speed
         elseif k.isDown("right") then
-            offsetX = offsetX - moveSpeed
+            offsetX = offsetX - movement.speed
         end
 
         if k.isDown("up") then
-            offsetY = offsetY + moveSpeed
+            offsetY = offsetY + movement.speed
         elseif k.isDown("down") then
-            offsetY = offsetY - moveSpeed
+            offsetY = offsetY - movement.speed
         end
     end
     
