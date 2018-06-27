@@ -34,13 +34,9 @@ cFireRed = {1, 0.4, 0.4}
 
 cNightOverlay = {0, 0, 0, 0.7}
 
-DebugFlags = {}
-DebugFlags["debug"] = true
-print(DebugFlags["debug"])
-
-DEBUG = true
-TREEBUG = false
-WATERBUG = false
+--DEBUG = true
+--TREEBUG = false
+--WATERBUG = false
 
 WINDOW_WIDTH= 1366
 WINDOW_HEIGHT= 768
@@ -54,10 +50,10 @@ scale = 1
 scaleModifier = 0.05
 mouseX = 0; mouseY = 0; relativeX = 0; relativeY = 0
 
-nightActive = false
-nightDarkness = 0
-
 debugTable = {}
+debugFlagState = {}
+
+nightFlag = false
 
 function init()
     keymode = MOVEMENT
@@ -79,29 +75,18 @@ function init()
     offsetY = 0
     moveSpeed = 3
 
-    nightActive = false
-    nightDarkness = 0
+    debugFlagState["debug"] = true
 
     generateHuman()
     largeForest = generateForest()
-end
-
-function toggleNight()
-    if nightActive then
-        nightActive = false
-    else
-        nightActive = true
-    end
 end
 
 function resizeConsole() 
     ConsoleWindow:setPosition(20, 708) -- x, y
     ConsoleWindow:setSize(620, ConsoleWindow.OFFSET.Y + ConsoleWindow.OFFSET.X) -- width, height
     for i=1, table.getn(Console.memory) do
-        if i < 14 then
-            ConsoleWindow:setPosition(ConsoleWindow.x, ConsoleWindow.y - 15)
-            ConsoleWindow:setSize(ConsoleWindow.width, ConsoleWindow.height + 15)
-        end
+        ConsoleWindow:setPosition(ConsoleWindow.x, ConsoleWindow.y - 15)
+        ConsoleWindow:setSize(ConsoleWindow.width, ConsoleWindow.height + 15)
     end
 end
 
@@ -178,6 +163,7 @@ end
 
 function love.load()
     initConsole()
+    initDebugState()
     w.setMode(WINDOW_WIDTH, WINDOW_HEIGHT)
     m.setVisible(false)
     k.setKeyRepeat(true)
@@ -189,6 +175,10 @@ function love.load()
     generateCatalog()
 
     init()
+end
+
+function love.quit()
+    return false
 end
 
 function love.update(dt)
@@ -265,7 +255,8 @@ function love.draw()
 
     --SCREEN OVERLAYS
     --draws nighttime overlay 
-    if nightActive then
+    --must be displayed as first overlay since it is diagetic
+    if nightFlag then
         g.setColor(cNightOverlay)
         g.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
     end
@@ -273,14 +264,14 @@ function love.draw()
     --sets text color
     g.setColor(cWhite)
 
-    if TREEBUG then
+    if debugFlagState["treebug"] then
         for i = -2000, 2000, 6 do
             x, y = convertPosition(i, (math.floor(27000/(i + 505)) - 350))
             g.points(x, y)
         end
     end
 
-    if WATERBUG then
+    if debugFlagState["waterbug"] then
         for i = -1000, 1000, 6 do
             x, y = convertPosition(i, 30 * math.sin(0.0272 * i) * math.cos(0.01 * i + math.random(0,1)) + (0.18 * i))
             g.points(x, y)
@@ -288,7 +279,7 @@ function love.draw()
     end
 
     --draws topleft debug menu
-    if DEBUG then
+    if debugFlagState["debug"] then
         spacing = 1 
         for key, val in pairs(debugTable) do
             if val ~= nil then

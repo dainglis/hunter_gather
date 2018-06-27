@@ -4,15 +4,16 @@
 Commands = {
     ["on"] = {"on", "true", "enable", "active", "-t"},
     ["off"] = {"off", "false", "disable", "inactive", "-f"},
-    ["close"] = {"close", "quit", "exit"},
-    ["reset"] = {"reset", "clear"},
-    ["cut"] = {"cut"},
+
+    ["help"] = {"help", "commands", usage="", tip="prints help page"},
+    ["close"] = {"close", "quit", "exit", usage="", tip="exits the game"},
+    ["reset"] = {"reset", "clear", usage="", tip="resets the game"},
+    ["cut"] = {"cut", usage="", tip="cuts a random tree"},
     ["toggle"] = {"toggle"},
-    ["time"] = {"time", "day", "night"},
-    ["debug"] = {"debug"},
-    ["night"] = {"night"},
-    ["cagalog"] = {"catalog", "catalogue"},
-    ["treebug"] = {"treebug"}  
+    ["night"] = {"night", usage="[on | off]", tip="toggles night overlay"},
+    ["cagalog"] = {"catalog", "catalogue", usage="", tip="shows the catalog"},
+
+    ["debugflags"] = {"debug", "treebug", "waterbug", "echo", usage="[flag] [on | off]", tip="toggles various debug flags"}
 }
 
 -- promptCommand
@@ -25,7 +26,7 @@ function promptCommand(cmd)
     local args = tokenizeString(cmd)
     local argmax = table.getn(args)
 
-    if table.getn(args) ~= 0 then
+    if table.getn(args) ~= 0 and debugFlagState["echo"] then
         local rebuiltString = table.concat(args, " ")
         Console:push(rebuiltString)
     end
@@ -38,40 +39,46 @@ function promptCommand(cmd)
             throwIncorrectUsage(args[1])
         end
     -- CLOSE window command
+    -- closes the love window and background terminal
     elseif tableContains(Commands["close"], args[1]) then
-        w.close()
+        love.event.quit()
     -- toggle DEBUGFLAG commands
-    elseif tableContains(Commands["debug"], args[1]) then
+    elseif tableContains(Commands["debugflags"], args[1]) then
         if table.getn(args) ~= 2 then
             throwIncorrectUsage(args[1])
         elseif tableContains(Commands["on"], args[2]) then
-            DEBUG = true
+            debugFlagState[args[1]] = true
         elseif tableContains(Commands["off"], args[2]) then
-            DEBUG = false
+            debugFlagState[args[1]] = false
         else
             throwIncorrectUsage(args[1])
         end
+    -- display HELP dialogue
+    elseif tableContains(Commands["help"], args[1]) then
+      listCommands()
+       -- uses Console:push
     -- togle NIGHT overlay
     elseif tableContains(Commands["night"], args[1]) then
         if table.getn(args) ~= 2 then
             throwIncorrectUsage(args[1])
         elseif tableContains(Commands["on"], args[2]) then
-            nightActive = true
+            if nightFlag == false then
+                Console:push("the sun sets")
+            end
+
+            nightFlag = true
         elseif tableContains(Commands["off"], args[2]) then
-            nightActive = false
+            if nightFlag == true then
+                Console:push("the sun rises")
+            end
+
+            nightFlag = false
         else
             throwIncorrectUsage(args[1])
         end
     else
         throwUnknownCommand(args[1])
     end
-
-    --[[ prints arguments to console
-    for i=1, argmax do
-        print("argument " .. tostring(i) .. ": " .. args[1])
-        table.remove(args, 1)
-    end
-    ]]--
 end
 
 -- throwIncorrectUsage
@@ -122,6 +129,23 @@ end
 --  prints to console all of the available text commands and their aliases
 function listCommands()
     for k in pairs(Commands) do
-        print("command: '" .. k .. "', aliases: '" .. table.concat(Commands[k], "', '") .. "'")
+        if (Commands[k].usage ~= nil) then
+        Console:push(k .. " " .. Commands[k].usage)
+        Console:push("  " .. Commands[k].tip)
+        Console:push("  aliases: '" .. table.concat(Commands[k], "', '") .. "'")
+        end
     end
+end
+
+-- initDebugState
+-- input: nil
+-- output: nil
+--   sets up the global table debugFlagStates based on the 
+--     Commands["debugflags"] string table. Currently sets all
+--     flags to true
+function initDebugState() 
+    for k,j in pairs(Commands["debugflags"]) do
+        debugFlagState[j] = false
+    end
+    print("Debug states initialized")
 end
