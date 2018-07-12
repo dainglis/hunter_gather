@@ -177,3 +177,16 @@ function initDebugState()
     end
     print("Debug states initialized")
 end
+
+-- tableContains
+-- input: table<string> (tb), string (word)
+--   iterates through the given table of strings, returning true if 
+--     "word" is an element of the table, and false otherwise
+function tableContains(tb, word)
+    for i = 1, table.getn(tb) do
+        if tb[i] == word then
+            return true
+        end
+    end
+    return false
+end

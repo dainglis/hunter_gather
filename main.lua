@@ -6,11 +6,10 @@ require"src.Window"
 require"src.Command"
 require"src.Catalog"
 require"src.Console"
-require"src.Forest"
+
 require"src.Human"
+require"src.Forest"
 require"src.Tree"
-require"src.Table"
-require"src.Position"
 require"src.Rock"
 
 g = love.graphics
@@ -121,6 +120,16 @@ end
 function generateCatalog()
     cat = Catalog:new()
     cat:add("human", "Homo sapiens", "Human")
+end
+
+-- dist 
+-- input: point (pos1 = {x, y}), point (pos2 = {x, y})
+-- output: number
+--   given two 2D points, returns the distance between these two points 
+-- TODO: find a home for this function
+function dist(a, b)
+    local distance = math.sqrt((a[1] - b[1]) ^ 2 + (a[2] - b[2]) ^ 2)
+    return distance
 end
 
 function love.mousereleased(x, y, button, istouch)
