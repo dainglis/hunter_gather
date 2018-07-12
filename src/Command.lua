@@ -8,13 +8,13 @@ Commands = {
     ["help"] = {"help", "commands", usage="", tip="prints help page"},
     ["close"] = {"close", "quit", "exit", usage="", tip="exits the game"},
     ["reset"] = {"reset", usage="", tip="resets the game"},
-    ["clear"] = {"clear"},
+    ["clear"] = {"clear", "cls", usage="", tip="clears the console"},
     ["cut"] = {"cut", usage="", tip="cuts a random tree"},
-    ["toggle"] = {"toggle"},
     ["night"] = {"night", usage="[on | off]", tip="toggles night overlay"},
     ["cagalog"] = {"catalog", "catalogue", usage="", tip="shows the catalog"},
 
-    ["debugflags"] = {"debug", "treebug", "waterbug", "echo", usage="[flag] [on | off]", tip="toggles various debug flags"}
+    ["debugflags"] = {"debug", "treebug", "waterbug", "echo", "life",
+        usage="[flag] [on | off]", tip="toggles various debug flags"}
 }
 
 -- promptCommand

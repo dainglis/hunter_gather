@@ -50,10 +50,6 @@ function Human:startMovement(x, y)
     self.dist = math.sqrt((self.newX - self.curX)^2 + (self.newY - self.curY)^2)
     self.changeX = self.speed * (self.newX - self.curX) / self.dist
     self.changeY = self.speed * (self.newY - self.curY) / self.dist
-    --print(self.curX .. ", " .. self.curY .. " to ... ")
-    --print(self.newX .. ", " .. self.newY)
-    --print("distance: " .. self.dist .. " and speeds: " .. self.changeX .. ", " .. self.changeY)
-    --print(self.changeX^2 + self.changeY^2)
 end
 
 -- updateMovement
@@ -65,12 +61,23 @@ end
 function Human:updateMovement()
     if (self.movement == false) or (self.curX == self.newX and self.curY == self.newY) then
         --floor coordinates for safer calculations
-        self.curX = math.floor(self.curX)
-        self.curY = math.floor(self.curY)
+
+        --self.curX = math.floor(self.curX)
+        --self.curY = math.floor(self.curY)
 
         self.movement = false
         return nil
     else
+        -- uses largeForest, not abstract Forest obj
+        local i = largeForest.marker
+        if i ~= 0 then
+            if dist({self.curX, self.curY}, {largeForest.trees[i].x, largeForest.trees[i].y}) 
+                    <= largeForest.trees[i].size + 5 then
+                print("inside tree")
+                self.newX = self.curX
+                self.newY = self.curY
+            end
+        end
         self.curX = self.curX + self.changeX
         self.curY = self.curY + self.changeY
         if (math.abs(self.curX - self.newX) < self.speed) then

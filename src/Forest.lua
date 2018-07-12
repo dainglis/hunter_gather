@@ -64,7 +64,8 @@ function Forest:checkClosestTree(x, y)
 
     for i = 1, self:size() do
         local curTree = self.trees[i]
-        local curDist = math.sqrt((curTree.x - x) ^ 2 + (curTree.y - y) ^ 2)
+        local curDist = dist({curTree.x, curTree.y}, {x, y})
+    --    local curDist = math.sqrt((curTree.x - x) ^ 2 + (curTree.y - y) ^ 2)
 
         if ((curDist < distance) or (distance == -1) and curDist <= curTree.size) then
             self.marker = i

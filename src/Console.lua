@@ -36,6 +36,27 @@ function ConsoleWindow:setSize(w, h)
     self.height = h
 end
 
+function ConsoleWindow:resize()
+    self:setPosition(20, 716) -- MAGIC NUMBERS = BAD
+    self:setSize(480, self.OFFSET.Y + self.OFFSET.X)
+    for i = 1, table.getn(Console.memory) do
+        self:setPosition(self.x, self.y - 15)
+        self:setSize(self.width, self.height + 15)
+    end
+end
+
+-- Console:init
+-- input: nil
+-- output: nil
+--   executed at load time to initialize the static Console object into a working state
+function Console:init()
+    self.text = ""
+    if self.memory == nil then
+        self.memory = {}
+    end
+    ConsoleWindow:resize()
+end
+
 -- Console:append
 -- input: string (text)
 -- output: nil
