@@ -2,7 +2,7 @@
 -- Contains definition and methods for the Console object and ConsoleWindow object
 
 Console = {text = "", memory = {}, PROMPT = "$ "}
-ConsoleWindow = {x = 0, y = 0, width = 0, height = 0, OFFSET = {X = 6, Y = 21, L = 15} }
+ConsoleWindow = {x = 0, y = 0, width = 0, height = 0, OFFSET = {X = 6, Y = 16, L = 15} }
 
 CONSOLE = "console"
 
@@ -37,11 +37,29 @@ function ConsoleWindow:setSize(w, h)
 end
 
 function ConsoleWindow:resize()
-    self:setPosition(20, 716) -- MAGIC NUMBERS = BAD
+    self:setPosition(20, 724) -- MAGIC NUMBERS = BAD
     self:setSize(480, self.OFFSET.Y + self.OFFSET.X)
     for i = 1, table.getn(Console.memory) do
         self:setPosition(self.x, self.y - 15)
         self:setSize(self.width, self.height + 15)
+    end
+end
+
+function ConsoleWindow:draw()
+    self:resize()
+
+    g.setColor(cConsoleBackground)
+    g.rectangle('fill', self.x, self.y, self.width, self.height)
+    g.setColor(cWhite)
+    g.rectangle('line', self.x, self.y, self.width, self.height)
+
+    g.print(Console.PROMPT .. Console.text,
+            self.x + self.OFFSET.X, 
+            self.y + self.height - self.OFFSET.Y)
+    for i = 1, Console:memSize() do
+        g.print(Console.memory[i], 
+                self.x + self.OFFSET.X,
+                self.y + self.height - self.OFFSET.Y - (15 * i))
     end
 end
 

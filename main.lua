@@ -7,6 +7,7 @@ require"src.Command"
 require"src.Catalog"
 require"src.Console"
 
+require"src.Structure"
 require"src.Human"
 require"src.Forest"
 require"src.Tree"
@@ -17,6 +18,7 @@ k = love.keyboard
 m = love.mouse
 w = love.window
 
+fontConsolas = g.newFont("/res/font/consolas-reg.ttf", 12)
 --fontMono = g.newFont("/res/font/source-code-pro.regular.ttf")
 --fontCourier = g.newFont("res/font/courier-prime-code.regular.ttf", 12)
 --fontCourierItalics = g.newFont("res/font/courier-prime-code.italic.ttf", 14)
@@ -34,7 +36,7 @@ lifeMatrix = {
 
 --Colours for drawing
 cWhite = {1, 1, 1}
-cWhiteFade = {1, 1, 1, 0.12}
+cWhiteFade = {1, 1, 1, 0.18}
 cNightOverlay = {0, 0, 0, 0.7}
 cConsoleBackground = {0, 0, 0, 0.7}
 
@@ -49,10 +51,7 @@ cFireRed = {1, 0.4, 0.4}
 cRock = {0.57, 0.57, 0.57}
 cRockFade = {0.57,0.57,0.57, 0.3}
 
--- scale = 1
---scaleModifier = 0.05
 mouseX = 0; mouseY = 0; relativeX = 0; relativeY = 0
---movement = {speed = 0, speedBase = 3, speedMod = 3}
 
 function init()
     Window:init()
@@ -60,15 +59,11 @@ function init()
 
     keymode = MOVEMENT
 
-    baseX = 0
-    baseY = 0
-    baseWidth = 55
-    baseHeight = 25
-    baseTrim = 2
+    longhouse = HouseStructure:new()
+    longhouse:init(-26, -11, 52, 22, 2)
 
-    tentX = 77
-    tentY = 110
-    tentRadius = 12
+    tent = TentStructure:new()
+    tent:init(77, 110, 12)
 
     fireX = 0
     fireY = 44
@@ -88,25 +83,6 @@ function init()
     print(welcome)
 end
 
-function resizeConsole() 
-    -- TODO: change to relative positioning, no magic numbers
-    -- uses absolute positions, not a good idea for window scaling
-    ConsoleWindow:setPosition(20, 716) -- x, y
-    ConsoleWindow:setSize(480, ConsoleWindow.OFFSET.Y + ConsoleWindow.OFFSET.X) -- width, height
-    for i=1, table.getn(Console.memory) do
-        ConsoleWindow:setPosition(ConsoleWindow.x, ConsoleWindow.y - 15)
-        ConsoleWindow:setSize(ConsoleWindow.width, ConsoleWindow.height + 15)
-    end
-end
-
-function initConsole()
-    Console.text = ""
-    if Console.memory == nil then
-        Console.memory = {}
-    end
-    resizeConsole()
-end
-
 function generateHuman()
     local manStartX = 15
     local manStartY = 22
@@ -115,7 +91,6 @@ function generateHuman()
     local x, y = man:getPosition()
     print("man generated, " .. man.name .. " (" .. x .. ", " .. y .. ")")
 end
-
 
 function generateCatalog()
     cat = Catalog:new()
@@ -126,7 +101,8 @@ end
 -- input: point (pos1 = {x, y}), point (pos2 = {x, y})
 -- output: number
 --   given two 2D points, returns the distance between these two points 
--- TODO: find a home for this function
+-- TODO: find a home for this function. I would like to avoid if possible a Helper.lua
+--   library but it may come to that
 function dist(a, b)
     local distance = math.sqrt((a[1] - b[1]) ^ 2 + (a[2] - b[2]) ^ 2)
     return distance
@@ -156,11 +132,12 @@ function love.keypressed(key, scancode, isrepeat)
         elseif key == "backspace" then
             Console:backspace()
         end
+
     elseif keymode == MOVEMENT then
         if key == "escape" or key == "return" then
             keymode = CONSOLE
         elseif key == "backspace" then
-            init()
+            --init()
         end
         if key == "c" then
             --largeForest:cutRandomTree()
@@ -169,6 +146,9 @@ function love.keypressed(key, scancode, isrepeat)
     end
 end
 
+-- love.wheelmoved
+-- input: number (x), number (y)
+--   built-in love function, executed when mouse wheel is moved
 function love.wheelmoved(x, y)
     if y > 0 then   
         Window:modifyScaleIn()
@@ -177,6 +157,8 @@ function love.wheelmoved(x, y)
     end
 end
 
+-- love.load
+--   built-in love function, executes on program startup
 function love.load()
     initDebugState()
     w.setMode(Window.width, Window.height)
@@ -188,6 +170,9 @@ function love.load()
     init()
 end
 
+-- love.quit
+--   built-in love function, executes when an attempt to close the love process is called. 
+--     return false will close the current process, returning true will continue running the process
 function love.quit()
     return false
 end
@@ -256,6 +241,7 @@ end
 --
 --   built-in love function for drawing a frame
 function love.draw()
+    g.setFont(fontConsolas)
     -- mouse cursor square
     mouseX, mouseY = m.getPosition()
     relativeX, relativeY = Window:toAbsolutePosition(mouseX, mouseY)
@@ -266,19 +252,9 @@ function love.draw()
     --sets building colours
     g.setColor(cWhite)
 
-    -- longhouse
-    baseX, baseY = Window:toRelativePosition(-baseWidth/2, -baseHeight/2)
-    baseModWidth = baseWidth * Window.scale
-    baseModHeight = baseHeight * Window.scale
-    g.setColor(cWhiteFade)
-    g.rectangle('fill', baseX, baseY, baseModWidth, baseModHeight, baseTrim)
-    g.setColor(cWhite)
-    g.rectangle('line', baseX, baseY, baseModWidth, baseModHeight, baseTrim)
-    
-    -- tent
-    tentModX, tentModY = Window:toRelativePosition(tentX, tentY)
-    tentModRadius = tentRadius * Window.scale
-    g.circle('line', tentModX, tentModY, tentModRadius)
+    -- draw Structures
+    longhouse:draw()
+    tent:draw()
 
     -- firepit
     fireModX, fireModY = Window:toRelativePosition(fireX, fireY)
@@ -287,32 +263,7 @@ function love.draw()
     g.circle('line', fireModX, fireModY, fireModRadius)
 
     -- draws forest
-    for f = 1, largeForest:size() do
-        local curTree = largeForest.trees[f]
-        local treeX, treeY = Window:toRelativePosition(curTree.x, curTree.y)
-
-        local treeColor = cTree
-        local treeColorFade = cTreeFade
-
-        if curTree.cut == false then
-            treeR = curTree.size * Window.scale
-            treeColor = cTree
-            treeColorFade = cTreeFade
-        else 
-            treeR = math.floor(curTree.size/3) * Window.scale
-            treeColor = cTreeTrunk
-            treeColorFade = cTreeTrunkFade
-        end
-
-        if f == largeForest.marker then
-            treeColor = cTreeSelected
-        end
-
-        g.setColor(treeColorFade)
-        g.circle('fill', treeX, treeY, treeR)
-        g.setColor(treeColor)
-        g.circle('line', treeX, treeY, treeR)
-    end
+    largeForest:draw()
 
     -- draws rock formations
     for r = 1, table.getn(quarry.rocks) do
@@ -325,18 +276,15 @@ function love.draw()
         g.circle('line', rockX, rockY, rockR)
     end
 
-    cManX, cManY = Window:toRelativePosition(man:getPosition())
-    g.setColor(cHumanFade)
-    g.circle('fill', cManX, cManY, 4 * Window.scale)
-    g.setColor(cHuman)
-    g.circle('line', cManX, cManY, 4 * Window.scale)
+    -- Draw all humans
+    man:draw()
 
     --SCREEN OVERLAYS
     --draws nighttime overlay 
     --must be displayed as first overlay since it is diagetic
     if nightFlag then
         g.setColor(cNightOverlay)
-        g.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+        g.rectangle('fill', 0, 0, Window.width, Window.height)
     end
 
     --sets text color
@@ -371,21 +319,7 @@ function love.draw()
     end
 
     if keymode == CONSOLE then
-        resizeConsole()
-
-        g.setColor(cConsoleBackground)
-        g.rectangle('fill', ConsoleWindow.x, ConsoleWindow.y, ConsoleWindow.width, ConsoleWindow.height)
-        g.setColor(cWhite)
-        g.rectangle('line', ConsoleWindow.x, ConsoleWindow.y, ConsoleWindow.width, ConsoleWindow.height)
-
-        g.print(Console.PROMPT .. Console.text,
-                ConsoleWindow.x + ConsoleWindow.OFFSET.X, 
-                ConsoleWindow.y + ConsoleWindow.height - ConsoleWindow.OFFSET.Y)
-        for i = 1, Console:memSize() do
-            g.print(Console.memory[i], 
-                    ConsoleWindow.x + ConsoleWindow.OFFSET.X,
-                    ConsoleWindow.y + ConsoleWindow.height - ConsoleWindow.OFFSET.Y - (15 * i))
-        end
+        ConsoleWindow:draw()
     end
     --displays cursor
     g.rectangle('line', mouseX, mouseY, 2, 2, 0)

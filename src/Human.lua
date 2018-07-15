@@ -1,10 +1,10 @@
 -- Human.lua
 -- Contains Human object definition and related methods
-Human = {id, name, curX, curY, newX, newY, changeX, changeY, dist, movement, speed}
+Human = {id, name, size, curX, curY, newX, newY, changeX, changeY, dist, movement, speed}
 
 function Human:new(id, curX, curY, name)
     --obj = obj or Human 
-    local obj = {id=id, curX=curX, curY=curY, name=name, 
+    local obj = {id=id, size = 4, curX=curX, curY=curY, name=name, 
             newX=0, newY=0, changeX=0, changeY=0, dist=0, movement=false, speed=3}
     setmetatable(obj, self)
     self.__index = self
@@ -87,5 +87,15 @@ function Human:updateMovement()
             self.newY = self.curY
         end
     end
+end
+
+function Human:draw()
+    local relX, relY = Window:toRelativePosition(self:getPosition())
+    local relRad = self.size * Window.scale
+
+    g.setColor(cHumanFade)
+    g.circle('fill', relX, relY, relRad)
+    g.setColor(cHuman)
+    g.circle('line', relX, relY, relRad)
 end
 

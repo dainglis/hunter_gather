@@ -35,6 +35,7 @@ function promptCommand(cmd)
     -- RESET command
     if tableContains(Commands["reset"], args[1]) then
         if table.getn(args) == 1 then
+            Console:clear()
             init()
         else
             throwIncorrectUsage(args[1])

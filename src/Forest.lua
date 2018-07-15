@@ -8,7 +8,7 @@ Forest = {trees = {}, marker = 0}
 -- output: Forest
 --   creates a new Forest object
 function Forest:new()
-    local obj = {trees = {}, marker = 0}
+    local obj = {}
     setmetatable(obj, self)
     self.__index = self
     
@@ -65,7 +65,6 @@ function Forest:checkClosestTree(x, y)
     for i = 1, self:size() do
         local curTree = self.trees[i]
         local curDist = dist({curTree.x, curTree.y}, {x, y})
-    --    local curDist = math.sqrt((curTree.x - x) ^ 2 + (curTree.y - y) ^ 2)
 
         if ((curDist < distance) or (distance == -1) and curDist <= curTree.size) then
             self.marker = i
@@ -73,10 +72,31 @@ function Forest:checkClosestTree(x, y)
     end
 end
 
--- generateForest()
+-- Forest:draw
+-- input: nil
+-- output: nil
+--   this method outlines the drawing of an entire forest object in the plane. the draw method 
+--     each tree is called. must be executed within the scope of love.draw
+function Forest:draw()
+    for f = 1, self:size() do
+        local curTree = self.trees[f]
+        if f == self.marker then
+            curTree:draw(true)
+        else
+            curTree:draw(false)
+        end
+    end
+end
+    
+
+-- generateForest
 -- input: nil
 -- output: Forest
 --   randomly generates and draws a forest northwest of the origin
+-- TODO: Currently this method only generates a small forest near the origin. 
+--   The plan is to generate forests in chunks across a large map. This method
+--   will need to either become the Forest object constructor, or a Forest method 
+--   which does not create a new Forest instance. 
 function generateForest()
     local f = Forest:new()
     forestGenerated = true
