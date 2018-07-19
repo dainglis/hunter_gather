@@ -30,7 +30,7 @@ end
 -- input: boolean (marked)
 -- output: nil
 --   this method outlines the drawing of a tree object on the plane. must be 
---     executed within love.draw
+--     executed within the scope of love.draw
 function Tree:draw(marked)
     local relX, relY = Window:toRelativePosition(self.x, self.y)
     local relRad = 1
