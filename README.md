@@ -8,3 +8,6 @@ Commands:
 - reset
 - cut
 - night
+
+Bug log:
+- reset command does not remove previous forest
