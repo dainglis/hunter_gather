@@ -2,6 +2,10 @@
 -- Contains Human object definition and related methods
 Human = {id, name, size, curX, curY, newX, newY, changeX, changeY, dist, movement, speed}
 
+-- Human:new
+--	Human constructor
+-- input: number (id), number (curX), number (curY), string (name)
+-- output: Human
 function Human:new(id, curX, curY, name)
     --obj = obj or Human 
     local obj = {id=id, size = 4, curX=curX, curY=curY, name=name, 
@@ -11,6 +15,19 @@ function Human:new(id, curX, curY, name)
 
     return obj
 end
+
+-- Human:generate
+-- input: nil
+-- output: Human
+--	generates default human at a start location
+function Human:generate()
+    local manStartX = 15
+    local manStartY = 22
+
+    man = Human:new(5, manStartX, manStartY, "Tim")
+	return man
+end
+
 
 -- getPosition
 -- input: nil (self)
@@ -69,6 +86,7 @@ function Human:updateMovement()
         return nil
     else
         -- uses largeForest, not abstract Forest obj
+		-- TODO: change this to not have dependency on Forest obj
         local i = largeForest.marker
         if i ~= 0 then
             if dist({self.curX, self.curY}, {largeForest.trees[i].x, largeForest.trees[i].y}) 
@@ -89,6 +107,10 @@ function Human:updateMovement()
     end
 end
 
+-- Human:draw
+-- input: nil
+-- output: nil
+--	draw function override for Human object
 function Human:draw()
     local relX, relY = Window:toRelativePosition(self:getPosition())
     local relRad = self.size * Window.scale

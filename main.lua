@@ -2,6 +2,9 @@
 -- Created by David Inglis
 -- 2018
 
+require"lib.hglib"
+require"lib.hgconst"
+
 require"src.Window"
 require"src.Command"
 require"src.Catalog"
@@ -12,16 +15,6 @@ require"src.Human"
 require"src.Forest"
 require"src.Tree"
 require"src.Rock"
-
-g = love.graphics
-k = love.keyboard
-m = love.mouse
-w = love.window
-
-fontConsolas = g.newFont("/res/font/consolas-reg.ttf", 12)
---fontMono = g.newFont("/res/font/source-code-pro.regular.ttf")
---fontCourier = g.newFont("res/font/courier-prime-code.regular.ttf", 12)
---fontCourierItalics = g.newFont("res/font/courier-prime-code.italic.ttf", 14)
 
 debugTable = {}
 debugFlagState = {}
@@ -34,26 +27,20 @@ lifeMatrix = {
     {spec="wolf", pop=40, new=3, growth=0.15}
 }
 
---Colours for drawing
-cWhite = {1, 1, 1}
-cWhiteFade = {1, 1, 1, 0.18}
-cNightOverlay = {0, 0, 0, 0.7}
-cConsoleBackground = {0, 0, 0, 0.7}
-
-cHuman = {244/255, 214/255, 66/255}
-cHumanFade = {244/255, 214/255, 66/255, 0.5}
-cTree = {13/255, 170/255, 42/255}
-cTreeFade = {13/255, 170/255, 42/255, 0.12}
-cTreeTrunk = {0.45, 0.2, 0.05}
-cTreeTrunkFade = {0.45, 0.2, 0.05, 0.6}
-cTreeSelected = {0.8, 0.8, 0.8}
-cFireRed = {1, 0.4, 0.4}
-cRock = {0.57, 0.57, 0.57}
-cRockFade = {0.57,0.57,0.57, 0.3}
-
 mouseX = 0; mouseY = 0; relativeX = 0; relativeY = 0
 
 function init()
+	--
+	-- 	initialization convention
+	-- 	static class 
+	--		:init()
+	--	
+	--  object instance
+	--  	object = Class:new()
+	--		object:init()
+	-- OR
+	--		object = Class:generate() 
+	--
     Window:init()
     Console:init()
 
@@ -75,37 +62,19 @@ function init()
 
     debugFlagState["debug"] = true
 
-    generateHuman()
-    largeForest = generateForest()
+	man = Human:generate()
+    largeForest = Forest:new()
+	largeForest:clear()
+	largeForest:generate()
 
     local welcome = "welcome to hunter/gather"
     Console:push(welcome)
     print(welcome)
 end
 
-function generateHuman()
-    local manStartX = 15
-    local manStartY = 22
-
-    man = Human:new(5, manStartX, manStartY, "Tim")
-    local x, y = man:getPosition()
-    print("man generated, " .. man.name .. " (" .. x .. ", " .. y .. ")")
-end
-
 function generateCatalog()
     cat = Catalog:new()
     cat:add("human", "Homo sapiens", "Human")
-end
-
--- dist 
--- input: point (pos1 = {x, y}), point (pos2 = {x, y})
--- output: number
---   given two 2D points, returns the distance between these two points 
--- TODO: find a home for this function. I would like to avoid if possible a Helper.lua
---   library but it may come to that
-function dist(a, b)
-    local distance = math.sqrt((a[1] - b[1]) ^ 2 + (a[2] - b[2]) ^ 2)
-    return distance
 end
 
 function love.mousereleased(x, y, button, istouch)
@@ -148,7 +117,7 @@ end
 
 -- love.wheelmoved
 -- input: number (x), number (y)
---   built-in love function, executed when mouse wheel is moved
+--  built-in love function, executed when mouse wheel is moved
 function love.wheelmoved(x, y)
     if y > 0 then   
         Window:modifyScaleIn()
@@ -158,7 +127,7 @@ function love.wheelmoved(x, y)
 end
 
 -- love.load
---   built-in love function, executes on program startup
+--  built-in love function, executes on program startup
 function love.load()
     initDebugState()
     w.setMode(Window.width, Window.height)
@@ -171,8 +140,10 @@ function love.load()
 end
 
 -- love.quit
---   built-in love function, executes when an attempt to close the love process is called. 
---     return false will close the current process, returning true will continue running the process
+--  built-in love function, executes when an attempt 
+--		to close the love process is called. 
+--  	return false will close the current process, 
+--		returning true will continue running the process
 function love.quit()
     return false
 end

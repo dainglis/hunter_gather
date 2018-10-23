@@ -2,6 +2,8 @@
 -- Contains Forest object definition and related methods
 Forest = {trees = {}, marker = 0}
 
+DEBUG_HEADER = "DEBUG (Forest): "
+
 -- Forest:new
 --   Forest constructor
 -- input: nil
@@ -15,10 +17,60 @@ function Forest:new()
     return obj
 end
 
+-- Forest:generate()
+-- input: nil
+-- output: Forest
+--   randomly generates and draws a forest northwest of the origin
+-- TODO: Currently this method only generates a small forest near the origin. 
+--   The plan is to generate forests in chunks across a large map. This method
+--   will need to either become the Forest object constructor, or a Forest method 
+--   which does not create a new Forest instance. 
+function Forest:generate()
+    --local f = Forest:new()
+	self:clear()
+    forestGenerated = true
+    print(DEBUG_HEADER .. "Generating forest...")
+    math.randomseed(os.time())
+
+    -- generate thick patch in y = a/(x-p) + q pattern
+    local manyTrees = math.random(155, 189)
+    for t = 1, manyTrees do
+        local r = math.random(5, 18)
+        local x = math.random(-500, 670)
+        local y = math.floor(29000/(x + 505) - 350)
+        local modX = math.random(-190, 100)
+        local modY = math.random(-100, 200)
+
+        if (math.random() > 0.71) then
+            modY = modY + math.random(10,155)
+        end
+
+       	self:addTree(Tree:new(x + modX, y + modY, r, false))
+    end
+
+    -- generate sporadic trees in a linear (square) pattern
+    local manyMoreTrees = math.random(65, 90)
+    for t = 1, manyMoreTrees do
+        local r = math.random(5, 18)
+        local x = math.random(-1700, 1500)
+        local y = math.random(-1300, 740)
+
+        self:addTree(Tree:new(x, y, r, false))
+    end
+
+    print(DEBUG_HEADER .. "Generated a forest with " .. self:size() .. " trees")
+    --return f
+end
+function Forest:clear()
+	for i =1, self:size() do
+		table.remove(self.trees, 0)
+	end
+end
+
 -- Forest:addTree
 -- input: Tree (t)
 -- output: nil
---   adds a new Tree object to the referenced Forest's 'trees' table
+--  adds a new Tree object to the referenced Forest's 'trees' table
 function Forest:addTree(t)
     table.insert(self.trees, t)
 end
@@ -26,7 +78,7 @@ end
 -- Forest:size
 -- input: nil
 -- output: number
---   returns the number of Tree elements in the Forest objects 'trees' table
+--  returns the number of Tree elements in the Forest objects 'trees' table
 function Forest:size()
     return table.getn(self.trees)
 end
@@ -89,46 +141,3 @@ function Forest:draw()
 end
     
 
--- generateForest
--- input: nil
--- output: Forest
---   randomly generates and draws a forest northwest of the origin
--- TODO: Currently this method only generates a small forest near the origin. 
---   The plan is to generate forests in chunks across a large map. This method
---   will need to either become the Forest object constructor, or a Forest method 
---   which does not create a new Forest instance. 
-function generateForest()
-    local f = Forest:new()
-    forestGenerated = true
-    print("Generating forest...")
-    math.randomseed(os.time())
-
-    -- generate thick patch in y = a/(x-p) + q pattern
-    local manyTrees = math.random(155, 189)
-    for t = 1, manyTrees do
-        local r = math.random(5, 18)
-        local x = math.random(-500, 670)
-        local y = math.floor(29000/(x + 505) - 350)
-        local modX = math.random(-190, 100)
-        local modY = math.random(-100, 200)
-
-        if (math.random() > 0.71) then
-            modY = modY + math.random(10,155)
-        end
-
-        f:addTree(Tree:new(x + modX, y + modY, r, false))
-    end
-
-    -- generate sporadic trees in a linear (square) pattern
-    local manyMoreTrees = math.random(65, 90)
-    for t = 1, manyMoreTrees do
-        local r = math.random(5, 18)
-        local x = math.random(-1700, 1500)
-        local y = math.random(-1300, 740)
-
-        f:addTree(Tree:new(x, y, r, false))
-    end
-
-    print("Generated a forest with " .. f:size() .. " trees")
-    return f
-end
