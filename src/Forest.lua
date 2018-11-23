@@ -27,6 +27,7 @@ end
 --   which does not create a new Forest instance. 
 function Forest:generate()
     --local f = Forest:new()
+    print(DEBUG_HEADER .. "Clearing forest...")
 	self:clear()
     forestGenerated = true
     print(DEBUG_HEADER .. "Generating forest...")
@@ -62,8 +63,8 @@ function Forest:generate()
     --return f
 end
 function Forest:clear()
-	for i =1, self:size() do
-		table.remove(self.trees, 0)
+	for i = 1, self:size() do
+		table.remove(self.trees)
 	end
 end
 
