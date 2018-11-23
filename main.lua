@@ -96,7 +96,13 @@ function love.keypressed(key, scancode, isrepeat)
             keymode = MOVEMENT
             Console:clearText()
         elseif key == "return" then
-            promptCommand(Console.text)
+            if Console:length() == 0 then
+                -- close console if enter key is hit and string is empty
+                keymode = MOVEMENT
+            else
+                -- send input as command
+                promptCommand(Console.text)
+            end
             Console:clearText()
         elseif key == "backspace" then
             Console:backspace()

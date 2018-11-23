@@ -87,6 +87,15 @@ function Console:push(text)
     table.insert(self.memory, 1, text)
 end
 
+-- Console:length()
+-- input: nil
+-- output: integer
+--   returns the length of the 'text' field string
+function Console:length()
+    local length = string.len(self.text)
+    return length
+end
+
 function Console:memSize()
     return table.getn(self.memory)
 end
