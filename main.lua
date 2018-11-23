@@ -275,8 +275,9 @@ function love.draw()
     end
 
     if debugFlagState["waterbug"] then
-        for i = -1000, 1000, 6 do
-            x, y = Window:toRelativePosition(i, 30 * math.sin(0.0272 * i) * math.cos(0.01 * i + math.random(0,1)) + (0.18 * i))
+--        g.setColor(0, 0, 1, 1);
+        for i = -5000, 5000, 8 do
+            x, y = Window:toRelativePosition(i, 30 * math.sin(0.0272 * i) * math.cos(0.01 * i + math.random(0,1)) + (0.18 * i) + 200)
             g.points(x, y)
         end
     end

@@ -104,7 +104,7 @@ end
 
 -- Console:length()
 -- input: nil
--- output: integer
+-- output: number
 --   returns the length of the 'text' field string
 function Console:length()
     local length = string.len(self.text)
@@ -113,7 +113,7 @@ end
 
 -- Console:memSize()
 -- input: nil
--- output: integer
+-- output: number
 --   returns the number of text strings in the Console's memory
 function Console:memSize()
     return table.getn(self.memory)

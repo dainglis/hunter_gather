@@ -110,7 +110,8 @@ end
 -- Human:draw
 -- input: nil
 -- output: nil
---	draw function override for Human object
+--	 draw function override for Human object
+--	 must be called from main.lua->love.draw()
 function Human:draw()
     local relX, relY = Window:toRelativePosition(self:getPosition())
     local relRad = self.size * Window.scale
