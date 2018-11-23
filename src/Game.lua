@@ -1,0 +1,2 @@
+-- Game.lua
+-- Static library responsible for Game state, abstracts from "main.lua" client

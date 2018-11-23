@@ -1,18 +1,29 @@
 -- Command.lua
 -- Contains functions and tables for console commands
 
+-- List of available console commands and command line arguments
+-- Command formm:
+--  ["command"] = {"command", "alias1", "alias2", ... , 
+--      usage="command arguments if applicable",
+--      tip="tooltip for the help dialog" }
+--
+-- Argument form:
+--  ["argument"] = {"argument, alias1", "alias2", ... }
 Commands = {
+    -- arguments
     ["on"] = {"on", "true", "enable", "active", "-t"},
     ["off"] = {"off", "false", "disable", "inactive", "-f"},
 
+    -- console commands
     ["help"] = {"help", "commands", usage="", tip="prints help page"},
     ["close"] = {"close", "quit", "exit", usage="", tip="exits the game"},
     ["reset"] = {"reset", usage="", tip="resets the game"},
     ["clear"] = {"clear", "cls", usage="", tip="clears the console"},
-    ["cut"] = {"cut", usage="", tip="cuts a random tree"},
+    ["cut"] = {"cut", usage="[%num]", tip="cuts 'num' random trees, or 1 if no arguments"},
     ["night"] = {"night", usage="[on | off]", tip="toggles night overlay"},
-    ["cagalog"] = {"catalog", "catalogue", usage="", tip="shows the catalog"},
+    ["catalog"] = {"catalog", "catalogue", usage="", tip="shows the catalog"},
 
+    -- debug command
     ["debugflags"] = {"debug", "treebug", "waterbug", "echo", "life",
         usage="[flag] [on | off]", tip="toggles various debug flags"}
 }

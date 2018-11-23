@@ -21,13 +21,17 @@ cConsoleBackground = {0, 0, 0, 0.7}
 
 cHuman = {244/255, 214/255, 66/255}
 cHumanFade = {244/255, 214/255, 66/255, 0.5}
+
 cTree = {13/255, 170/255, 42/255}
 cTreeFade = {13/255, 170/255, 42/255, 0.12}
 cTreeTrunk = {0.45, 0.2, 0.05}
 cTreeTrunkFade = {0.45, 0.2, 0.05, 0.6}
 cTreeSelected = {0.8, 0.8, 0.8}
+
 cFireRed = {1, 0.4, 0.4}
+
 cRock = {0.57, 0.57, 0.57}
 cRockFade = {0.57,0.57,0.57, 0.3}
+cRockFadeALT = {0.4, 0.4, 0.43, 0.3}
 
 print("DEBUG: HGconst successfully loaded.")

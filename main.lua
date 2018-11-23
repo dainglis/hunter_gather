@@ -30,7 +30,6 @@ lifeMatrix = {
 mouseX = 0; mouseY = 0; relativeX = 0; relativeY = 0
 
 function init()
-	--
 	-- 	initialization convention
 	-- 	static class 
 	--		:init()
@@ -40,7 +39,7 @@ function init()
 	--		object:init()
 	-- OR
 	--		object = Class:generate() 
-	--
+
     Window:init()
     Console:init()
 
@@ -199,15 +198,16 @@ function love.update(dt)
             Window:movementSpeedMod(false)
         end
 
-        if k.isDown("left") then
+        -- Window movement supports arrow keys and WASD
+        if k.isDown("left") or k.isDown("a") then
             Window:moveLeft()
-        elseif k.isDown("right") then
+        elseif k.isDown("right") or k.isDown("d") then
             Window:moveRight()
         end
 
-        if k.isDown("up") then
+        if k.isDown("up") or k.isDown("w") then
             Window:moveUp()
-        elseif k.isDown("down") then
+        elseif k.isDown("down") or k.isDown("s")then
             Window:moveDown()
         end
     end
@@ -247,7 +247,7 @@ function love.draw()
         local curRock = quarry.rocks[r]
         local rockX, rockY = Window:toRelativePosition(curRock.x, curRock.y)
         local rockR = curRock.size * Window.scale
-        g.setColor(0.4,0.4,0.43, 0.3)
+        g.setColor(cRockFade)
         g.circle('fill', rockX, rockY, rockR)
         g.setColor(cRock)
         g.circle('line', rockX, rockY, rockR)

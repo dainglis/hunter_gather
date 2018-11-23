@@ -36,8 +36,18 @@ function ConsoleWindow:setSize(w, h)
     self.height = h
 end
 
+-- ConsoleWindow:resize()
+-- input: nil
+-- output: nil
+--   sets console window position and size based on number of 
+--   lines of text history
 function ConsoleWindow:resize()
-    self:setPosition(20, 724) -- MAGIC NUMBERS = BAD
+    -- better than magic numbers but still bad
+    -- TODO rework this to be more flexible
+    local smallConsoleX = 20
+    local smallConsoleY = 724
+    self:setPosition(smallConsoleX, smallConsoleY)
+
     self:setSize(480, self.OFFSET.Y + self.OFFSET.X)
     for i = 1, table.getn(Console.memory) do
         self:setPosition(self.x, self.y - 15)
@@ -45,6 +55,11 @@ function ConsoleWindow:resize()
     end
 end
 
+-- ConsoleWindow:draw()
+-- input: nil
+-- output: nil
+--   draw override function for ConsoleWindow
+--   must be called from main.lua->love.draw()
 function ConsoleWindow:draw()
     self:resize()
 
@@ -96,6 +111,10 @@ function Console:length()
     return length
 end
 
+-- Console:memSize()
+-- input: nil
+-- output: integer
+--   returns the number of text strings in the Console's memory
 function Console:memSize()
     return table.getn(self.memory)
 end

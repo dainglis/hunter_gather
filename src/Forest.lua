@@ -30,17 +30,18 @@ function Forest:generate()
     print(DEBUG_HEADER .. "Clearing forest...")
 	self:clear()
     forestGenerated = true
+    
     print(DEBUG_HEADER .. "Generating forest...")
     math.randomseed(os.time())
 
     -- generate thick patch in y = a/(x-p) + q pattern
-    local manyTrees = math.random(155, 189)
+    local manyTrees = math.random(155, 220)
     for t = 1, manyTrees do
         local r = math.random(5, 18)
         local x = math.random(-500, 670)
         local y = math.floor(29000/(x + 505) - 350)
-        local modX = math.random(-190, 100)
-        local modY = math.random(-100, 200)
+        local modX = math.random(-330, 150)
+        local modY = math.random(-300, 220)
 
         if (math.random() > 0.71) then
             modY = modY + math.random(10,155)
