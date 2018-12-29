@@ -1,8 +1,10 @@
 -- Command.lua
 -- Contains functions and tables for console commands
+--
+-- requires global Console
 
 -- List of available console commands and command line arguments
--- Command formm:
+-- Command form:
 --  ["command"] = {"command", "alias1", "alias2", ... , 
 --      usage="command arguments if applicable",
 --      tip="tooltip for the help dialog" }
@@ -19,14 +21,17 @@ Commands = {
     ["close"] = {"close", "quit", "exit", usage="", tip="exits the game"},
     ["reset"] = {"reset", usage="", tip="resets the game"},
     ["clear"] = {"clear", "cls", usage="", tip="clears the console"},
-    ["cut"] = {"cut", usage="[%num]", tip="cuts 'num' random trees, or 1 if no arguments"},
-    ["night"] = {"night", usage="[on | off]", tip="toggles night overlay"},
+    ["cut"] = {"cut", usage="[ %number ]", tip="cuts 'num' random trees, or 1 if no arguments"},
+    ["night"] = {"night", usage="[ on | off ]", tip="toggles night overlay"},
     ["catalog"] = {"catalog", "catalogue", usage="", tip="shows the catalog"},
 
     -- debug command
-    ["debugflags"] = {"debug", "treebug", "waterbug", "echo", "life",
+    ["echo"] = {"echo", usage="[ on | off | %message ]", tip="toggles echo of entered command or relays message"},
+    ["debugflags"] = {"debug", "treebug", "waterbug", "life",
         usage="[flag] [on | off]", tip="toggles various debug flags"}
 }
+
+status = { ["echo"] = false }
 
 -- promptCommand
 -- input: string (cmd)
@@ -38,12 +43,14 @@ function promptCommand(cmd)
     local args = tokenizeString(cmd)
     local argmax = table.getn(args)
 
-    if table.getn(args) ~= 0 and debugFlagState["echo"] then
+    -- ECHO status
+    if table.getn(args) ~= 0 and status["echo"] then
         local rebuiltString = table.concat(args, " ")
         Console:push(rebuiltString)
     end
 
     -- RESET command
+    -- resets the hunter_gather instance by calling the init function 
     if tableContains(Commands["reset"], args[1]) then
         if table.getn(args) == 1 then
             Console:clear()
@@ -55,6 +62,26 @@ function promptCommand(cmd)
     -- closes the love window and background terminal
     elseif tableContains(Commands["close"], args[1]) then
         love.event.quit()
+    -- ECHO command
+    elseif tableContains(Commands["echo"], args[1]) then
+        if table.getn(args) < 2 then
+            -- "echo" entered
+            -- pushes a blank line to the Console
+            Console:push(" ") 
+        elseif tableContains(Commands["on"], args[2]) then
+            -- turn echo on
+            status["echo"] = true
+        elseif tableContains(Commands["off"], args[2]) then
+            -- turn echo off
+            status["echo"] = false
+        else  
+            -- print entered text to console
+            local rebuildString = ""
+            for i=2,table.getn(args)  do
+                rebuildString = rebuildString .. args[i] .. " "
+            end
+            Console:push(rebuildString)
+        end
     -- toggle DEBUGFLAG commands
     elseif tableContains(Commands["debugflags"], args[1]) then
         if table.getn(args) ~= 2 then
