@@ -2,7 +2,12 @@
 -- Contains definition and methods for the Console object and ConsoleWindow object
 
 Console = {text = "", memory = {}, PROMPT = "$ "}
-ConsoleWindow = {x = 0, y = 0, width = 0, height = 0, OFFSET = {X = 6, Y = 16, L = 15} }
+ConsoleWindow = {
+    x = 0, y = 0, 
+    width = 0, height = 0, 
+    OFFSET = {X = 20, Y = 44}, 
+    SPACING = {X = 6, Y = 16, L = 15} 
+}
 
 CONSOLE = "console"
 
@@ -42,16 +47,14 @@ end
 --   sets console window position and size based on number of 
 --   lines of text history
 function ConsoleWindow:resize()
-    -- better than magic numbers but still bad
-    -- TODO rework this to be more flexible
-    local smallConsoleX = 20
-    local smallConsoleY = 724
-    self:setPosition(smallConsoleX, smallConsoleY)
+    -- sets position in bottom-left corner of the screen
+    -- y offset relative to program window size
+    self:setPosition(self.OFFSET.X, g.getHeight() - self.OFFSET.Y)
 
-    self:setSize(480, self.OFFSET.Y + self.OFFSET.X)
+    self:setSize(480, self.SPACING.Y + self.SPACING.X)
     for i = 1, table.getn(Console.memory) do
-        self:setPosition(self.x, self.y - 15)
-        self:setSize(self.width, self.height + 15)
+        self:setPosition(self.x, self.y - self.SPACING.L)
+        self:setSize(self.width, self.height + self.SPACING.L)
     end
 end
 
@@ -69,12 +72,12 @@ function ConsoleWindow:draw()
     g.rectangle('line', self.x, self.y, self.width, self.height)
 
     g.print(Console.PROMPT .. Console.text,
-            self.x + self.OFFSET.X, 
-            self.y + self.height - self.OFFSET.Y)
+            self.x + self.SPACING.X, 
+            self.y + self.height - self.SPACING.Y)
     for i = 1, Console:memSize() do
         g.print(Console.memory[i], 
-                self.x + self.OFFSET.X,
-                self.y + self.height - self.OFFSET.Y - (15 * i))
+                self.x + self.SPACING.X,
+                self.y + self.height - self.SPACING.Y - (15 * i))
     end
 end
 
