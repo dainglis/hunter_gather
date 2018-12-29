@@ -170,6 +170,7 @@ function love.update(dt)
 
     debugTable["movespeed"] = Window.move
     debugTable["keymode"] = keymode
+    debugTable["window"] = "(w=" .. g.getWidth() .. ", h=" .. g.getHeight() .. ")"
 
     man:updateMovement()
 
@@ -258,7 +259,7 @@ function love.draw()
 
     --SCREEN OVERLAYS
     --draws nighttime overlay 
-    --must be displayed as first overlay since it is diagetic
+    --must be displayed as first overlay since it is diegetic
     if nightFlag then
         g.setColor(cNightOverlay)
         g.rectangle('fill', 0, 0, Window.width, Window.height)
