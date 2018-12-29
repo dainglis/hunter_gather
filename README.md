@@ -6,12 +6,12 @@ Commands:
 - close
 - reset
 - clear
-- cut
-- night
+- cut [ number ]
+- night [ on | off ]
 - catalog
-- debug [on | off]
-- treebug [on | off]
-- waterbug [on | off]
+- debug [ on | off ]
+- treebug [ on | off ]
+- waterbug [ on | off ]
 
 TODO:
 - resource gathering (duh)
