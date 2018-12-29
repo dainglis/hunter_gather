@@ -6,9 +6,10 @@ Commands:
 - close
 - reset
 - clear
-- cut [ number ]
+- cut [ %number ]
 - night [ on | off ]
 - catalog
+- echo [ on | off | %message ]
 - debug [ on | off ]
 - treebug [ on | off ]
 - waterbug [ on | off ]
