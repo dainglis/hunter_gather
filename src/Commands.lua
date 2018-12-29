@@ -17,16 +17,16 @@ Commands = {
     ["off"] = {"off", "false", "disable", "inactive", "-f"},
 
     -- console commands
-    ["help"] = {"help", "commands", usage="", tip="prints help page"},
+    ["help"] = {"help", "commands", "?", usage="", tip="prints help page"},
     ["close"] = {"close", "quit", "exit", usage="", tip="exits the game"},
     ["reset"] = {"reset", usage="", tip="resets the game"},
     ["clear"] = {"clear", "cls", usage="", tip="clears the console"},
-    ["cut"] = {"cut", usage="[ %number ]", tip="cuts 'num' random trees, or 1 if no arguments"},
+    ["cut"] = {"cut", usage="[ %number ]", tip="cuts %number random trees, or 1 if no arguments"},
     ["night"] = {"night", usage="[ on | off ]", tip="toggles night overlay"},
     ["catalog"] = {"catalog", "catalogue", usage="", tip="shows the catalog"},
 
     -- debug command
-    ["echo"] = {"echo", usage="[ on | off | %message ]", tip="toggles echo of entered command or relays message"},
+    ["echo"] = {"echo", usage="[ on | off | %message ]", tip="toggles echo of entered command or relays %message"},
     ["debugflags"] = {"debug", "treebug", "waterbug", "life",
         usage="[flag] [on | off]", tip="toggles various debug flags"}
 }
@@ -39,29 +39,39 @@ status = { ["echo"] = false }
 --   the given string cmd is tokenized into a table 'args'. the first element is taken as the input commnand
 --     and the remaining elements are flags. if the command is valid, it is performed; otherwise an error
 --     message is printed to console stating that the command is invalid.
-function promptCommand(cmd)
+--function promptCommand(cmd)
+function Commands:prompt(cmd)
     local args = tokenizeString(cmd)
     local argmax = table.getn(args)
 
-    -- ECHO status
+    -- check ECHO status
     if table.getn(args) ~= 0 and status["echo"] then
         local rebuiltString = table.concat(args, " ")
         Console:push(rebuiltString)
     end
 
+     
+    -- HELP display
+    if tableContains(Commands["help"], args[1]) then
+      if table.getn(args) == 1 then
+          Console:clear()
+          listCommands()
+      else
+          throwIncorrectUsage(args[1])
+      end
+    -- CLOSE window command
+    -- closes the love window and background terminal
+    elseif tableContains(Commands["close"], args[1]) then
+        love.event.quit()
     -- RESET command
     -- resets the hunter_gather instance by calling the init function 
-    if tableContains(Commands["reset"], args[1]) then
+    elseif tableContains(Commands["reset"], args[1]) then
         if table.getn(args) == 1 then
             Console:clear()
             init()
         else
             throwIncorrectUsage(args[1])
         end
-    -- CLOSE window command
-    -- closes the love window and background terminal
-    elseif tableContains(Commands["close"], args[1]) then
-        love.event.quit()
     -- ECHO command
     elseif tableContains(Commands["echo"], args[1]) then
         if table.getn(args) < 2 then
@@ -82,7 +92,7 @@ function promptCommand(cmd)
             end
             Console:push(rebuildString)
         end
-    -- toggle DEBUGFLAG commands
+    -- DEBUGFLAG commands
     elseif tableContains(Commands["debugflags"], args[1]) then
         if table.getn(args) ~= 2 then
             throwIncorrectUsage(args[1])
@@ -93,18 +103,10 @@ function promptCommand(cmd)
         else
             throwIncorrectUsage(args[1])
         end
-    -- display HELP dialogue
-    elseif tableContains(Commands["help"], args[1]) then
-      if table.getn(args) == 1 then
-          Console:clear()
-          listCommands()
-      else
-          throwIncorrectUsage(args[1])
-      end
-       -- uses Console:push
+    -- CLEAR screen command
     elseif tableContains(Commands["clear"], args[1]) then
         Console:clear()
-    -- togle NIGHT overlay
+    -- NIGHT overlay toggle
     elseif tableContains(Commands["night"], args[1]) then
         if table.getn(args) ~= 2 then
             throwIncorrectUsage(args[1])
@@ -123,6 +125,7 @@ function promptCommand(cmd)
         else
             throwIncorrectUsage(args[1])
         end
+    -- CUT tree command
     elseif tableContains(Commands["cut"], args[1]) then
         if table.getn(args) == 1 then
             args[2] = "1"
@@ -142,6 +145,13 @@ function promptCommand(cmd)
                     Console:push(tostring(reps) .. " trees have been felled")
                 end
             end
+        end
+    -- CATALOG command
+    elseif tableContains(Commands["catalog"], args[1]) then
+        if table.getn(args) == 1 then
+            -- print the catalog
+        else
+            throwIncorrectUsage(args[1])
         end
     else
         throwUnknownCommand(args[1])
@@ -184,8 +194,10 @@ end
 --   all tokens of string delimited by the space character, %s
 function tokenizeString(str)
     local tokens = {} 
-    for word in string.gmatch(str, "([^%s]+)") do
-        table.insert(tokens, word)
+    if (str) then
+        for word in string.gmatch(str, "([^%s]+)") do
+            table.insert(tokens, word)
+        end
     end
     return tokens
 end
@@ -194,12 +206,12 @@ end
 --input: nil
 --output: nil
 --  prints to console all of the available text commands and their aliases
-function listCommands()
+function Commands:list()
     for k in pairs(Commands) do
         if (Commands[k].usage ~= nil) then
-        Console:push(k .. " " .. Commands[k].usage)
-        Console:push("  " .. Commands[k].tip)
-        Console:push("  aliases: '" .. table.concat(Commands[k], "', '") .. "'")
+            Console:push(k .. " " .. Commands[k].usage)
+            Console:push("  " .. Commands[k].tip)
+            Console:push("  aliases: '" .. table.concat(Commands[k], "', '") .. "'")
         end
     end
 end

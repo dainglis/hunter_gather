@@ -6,7 +6,9 @@ ConsoleWindow = {
     x = 0, y = 0, 
     width = 0, height = 0, 
     OFFSET = {X = 20, Y = 44}, 
-    SPACING = {X = 6, Y = 16, L = 15} 
+    SPACING = {X = 6, Y = 16, L = 15},
+    -- DEFAULTS is dependant on SPACING X and Y
+    DEFAULTS = {WIDTH = 480, HEIGHT = 22}
 }
 
 CONSOLE = "console"
@@ -51,7 +53,8 @@ function ConsoleWindow:resize()
     -- y offset relative to program window size
     self:setPosition(self.OFFSET.X, g.getHeight() - self.OFFSET.Y)
 
-    self:setSize(480, self.SPACING.Y + self.SPACING.X)
+    --self:setSize(480, self.SPACING.Y + self.SPACING.X)
+    self:setSize(self.DEFAULTS.WIDTH, self.DEFAULTS.HEIGHT)
     for i = 1, table.getn(Console.memory) do
         self:setPosition(self.x, self.y - self.SPACING.L)
         self:setSize(self.width, self.height + self.SPACING.L)
