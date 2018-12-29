@@ -13,6 +13,13 @@ Commands:
 - treebug [ on | off ]
 - waterbug [ on | off ]
 
+Aliases:
+- on        : true, enable, active, -t
+- off       : false, disable, inactive, -f
+- close     : quit, exit
+- clear     : cls
+- catalog   : catalogue
+
 TODO:
 - resource gathering (duh)
 - multiple tribespeople
