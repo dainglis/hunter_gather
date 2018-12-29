@@ -1,7 +1,10 @@
--- Command.lua
+-- Commands.lua
 -- Contains functions and tables for console commands
 --
--- requires global Console
+-- requires source Console, pulled from main
+--
+-- requires library hglib, pulled from main
+
 
 -- List of available console commands and command line arguments
 -- Command form:
@@ -33,13 +36,12 @@ Commands = {
 
 status = { ["echo"] = false }
 
--- promptCommand
+-- Commands:prompt
 -- input: string (cmd)
 -- output: nil
 --   the given string cmd is tokenized into a table 'args'. the first element is taken as the input commnand
 --     and the remaining elements are flags. if the command is valid, it is performed; otherwise an error
 --     message is printed to console stating that the command is invalid.
---function promptCommand(cmd)
 function Commands:prompt(cmd)
     local args = tokenizeString(cmd)
     local argmax = table.getn(args)
@@ -57,7 +59,7 @@ function Commands:prompt(cmd)
           Console:clear()
           listCommands()
       else
-          throwIncorrectUsage(args[1])
+          Commands:throwIncorrectUsage(args[1])
       end
     -- CLOSE window command
     -- closes the love window and background terminal
@@ -70,7 +72,7 @@ function Commands:prompt(cmd)
             Console:clear()
             init()
         else
-            throwIncorrectUsage(args[1])
+            Commands:throwIncorrectUsage(args[1])
         end
     -- ECHO command
     elseif tableContains(Commands["echo"], args[1]) then
@@ -95,13 +97,13 @@ function Commands:prompt(cmd)
     -- DEBUGFLAG commands
     elseif tableContains(Commands["debugflags"], args[1]) then
         if table.getn(args) ~= 2 then
-            throwIncorrectUsage(args[1])
+            Commands:throwIncorrectUsage(args[1])
         elseif tableContains(Commands["on"], args[2]) then
             debugFlagState[args[1]] = true
         elseif tableContains(Commands["off"], args[2]) then
             debugFlagState[args[1]] = false
         else
-            throwIncorrectUsage(args[1])
+            Commands:throwIncorrectUsage(args[1])
         end
     -- CLEAR screen command
     elseif tableContains(Commands["clear"], args[1]) then
@@ -109,7 +111,7 @@ function Commands:prompt(cmd)
     -- NIGHT overlay toggle
     elseif tableContains(Commands["night"], args[1]) then
         if table.getn(args) ~= 2 then
-            throwIncorrectUsage(args[1])
+            Commands:throwIncorrectUsage(args[1])
         elseif tableContains(Commands["on"], args[2]) then
             if nightFlag == false then
                 Console:push("the sun sets")
@@ -123,7 +125,7 @@ function Commands:prompt(cmd)
 
             nightFlag = false
         else
-            throwIncorrectUsage(args[1])
+            Commands:throwIncorrectUsage(args[1])
         end
     -- CUT tree command
     elseif tableContains(Commands["cut"], args[1]) then
@@ -134,7 +136,7 @@ function Commands:prompt(cmd)
         if table.getn(args) == 2 then
             local reps = tonumber(args[2])
             if reps == nil then
-                throwIncorrectUsage(args[1])
+                Commands:throwIncorrectUsage(args[1])
             else
                 if reps > 100 then
                     Console:push("that is far too many trees")
@@ -150,29 +152,30 @@ function Commands:prompt(cmd)
     elseif tableContains(Commands["catalog"], args[1]) then
         if table.getn(args) == 1 then
             -- print the catalog
+            Console:push("This is the catalog: empty for now")
         else
-            throwIncorrectUsage(args[1])
+            Commands:throwIncorrectUsage(args[1])
         end
     else
-        throwUnknownCommand(args[1])
+        Commands:throwUnknownCommand(args[1])
     end
 end
 
--- throwIncorrectUsage
+-- Commands:throwIncorrectUsage
 -- input: string (cmd)
 -- output: nil
 --   prints a message to console indicating that the command entered is in incorrect format
-function throwIncorrectUsage(cmd)
+function Commands:throwIncorrectUsage(cmd)
     local incorrect = "incorrect use of the '" .. cmd .. "' command"
     print(incorrect)
     Console:push(incorrect)
 end
 
--- throwUnknownCommand
+-- Commands:throwUnknownCommand
 -- input: string (cmd)
 -- output: nil
 --   prints a message to console indicating that the text entered is not a valid command
-function throwUnknownCommand(cmd)
+function Commands:throwUnknownCommand(cmd)
     if cmd then
         local unknown = "'" .. cmd .. "' is not a valid command"
         print(unknown)
@@ -180,6 +183,7 @@ function throwUnknownCommand(cmd)
     end
 end
 
+-- DEPRECATED
 -- toggleBoolean
 -- input: boolean (bool)
 -- output: boolean
@@ -188,24 +192,10 @@ function toggleBoolean(bool)
     return not bool
 end
 
--- tokenizeString
--- input: string (str)
--- output: table (tokens)
---   all tokens of string delimited by the space character, %s
-function tokenizeString(str)
-    local tokens = {} 
-    if (str) then
-        for word in string.gmatch(str, "([^%s]+)") do
-            table.insert(tokens, word)
-        end
-    end
-    return tokens
-end
-
---listCommands
---input: nil
---output: nil
---  prints to console all of the available text commands and their aliases
+-- Commands:list
+-- input: nil
+-- output: nil
+--   pushes to console all of the available text commands and their aliases
 function Commands:list()
     for k in pairs(Commands) do
         if (Commands[k].usage ~= nil) then
@@ -216,6 +206,7 @@ function Commands:list()
     end
 end
 
+-- DEPRECATED
 -- initDebugState
 -- input: nil
 -- output: nil
@@ -227,17 +218,4 @@ function initDebugState()
         debugFlagState[j] = false
     end
     print("Debug states initialized")
-end
-
--- tableContains
--- input: table<string> (tb), string (word)
---   iterates through the given table of strings, returning true if 
---     "word" is an element of the table, and false otherwise
-function tableContains(tb, word)
-    for i = 1, table.getn(tb) do
-        if tb[i] == word then
-            return true
-        end
-    end
-    return false
 end
