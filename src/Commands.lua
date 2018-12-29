@@ -10,7 +10,8 @@
 -- Command form:
 --  ["command"] = {"command", "alias1", "alias2", ... , 
 --      usage="command arguments if applicable",
---      tip="tooltip for the help dialog" }
+--      tip="tooltip for the help dialog",
+--      status=*relevant command data, not used for all commands*, }
 --
 -- Argument form:
 --  ["argument"] = {"argument, alias1", "alias2", ... }
@@ -29,12 +30,14 @@ Commands = {
     ["catalog"] = {"catalog", "catalogue", usage="", tip="shows the catalog"},
 
     -- debug command
-    ["echo"] = {"echo", usage="[ on | off | %message ]", tip="toggles echo of entered command or relays %message"},
+    ["echo"] = {"echo", usage="[ on | off | %message ]", 
+        tip="toggles echo of entered command or relays %message",
+        status=false},
+    -- TODO: make debugflags not suck and make it less global-dependent 
     ["debugflags"] = {"debug", "treebug", "waterbug", "life",
         usage="[flag] [on | off]", tip="toggles various debug flags"}
 }
 
-status = { ["echo"] = false }
 
 -- Commands:prompt
 -- input: string (cmd)
@@ -47,7 +50,7 @@ function Commands:prompt(cmd)
     local argmax = table.getn(args)
 
     -- check ECHO status
-    if table.getn(args) ~= 0 and status["echo"] then
+    if table.getn(args) ~= 0 and Commands["echo"].status then
         local rebuiltString = table.concat(args, " ")
         Console:push(rebuiltString)
     end
@@ -57,7 +60,7 @@ function Commands:prompt(cmd)
     if tableContains(Commands["help"], args[1]) then
       if table.getn(args) == 1 then
           Console:clear()
-          listCommands()
+          Commands:list()
       else
           Commands:throwIncorrectUsage(args[1])
       end
@@ -82,10 +85,10 @@ function Commands:prompt(cmd)
             Console:push(" ") 
         elseif tableContains(Commands["on"], args[2]) then
             -- turn echo on
-            status["echo"] = true
+            Commands["echo"].status = true
         elseif tableContains(Commands["off"], args[2]) then
             -- turn echo off
-            status["echo"] = false
+            Commands["echo"].status = false
         else  
             -- print entered text to console
             local rebuildString = ""
@@ -161,6 +164,7 @@ function Commands:prompt(cmd)
     end
 end
 
+
 -- Commands:throwIncorrectUsage
 -- input: string (cmd)
 -- output: nil
@@ -170,6 +174,7 @@ function Commands:throwIncorrectUsage(cmd)
     print(incorrect)
     Console:push(incorrect)
 end
+
 
 -- Commands:throwUnknownCommand
 -- input: string (cmd)
@@ -183,14 +188,6 @@ function Commands:throwUnknownCommand(cmd)
     end
 end
 
--- DEPRECATED
--- toggleBoolean
--- input: boolean (bool)
--- output: boolean
---   switches the state of the given boolean variable
-function toggleBoolean(bool)
-    return not bool
-end
 
 -- Commands:list
 -- input: nil
@@ -198,13 +195,16 @@ end
 --   pushes to console all of the available text commands and their aliases
 function Commands:list()
     for k in pairs(Commands) do
-        if (Commands[k].usage ~= nil) then
+        -- pulls only *commands* from the Commands table (non-function table elements that
+        -- themselves have a 'usage' element)
+        if (type(Commands[k]) ~= "function" and Commands[k].usage ~= nil) then
             Console:push(k .. " " .. Commands[k].usage)
             Console:push("  " .. Commands[k].tip)
             Console:push("  aliases: '" .. table.concat(Commands[k], "', '") .. "'")
         end
     end
 end
+
 
 -- DEPRECATED
 -- initDebugState
@@ -219,3 +219,13 @@ function initDebugState()
     end
     print("Debug states initialized")
 end
+ 
+-- DEPRECATED
+-- toggleBoolean
+-- input: boolean (bool)
+-- output: boolean
+--   switches the state of the given boolean variable
+function toggleBoolean(bool)
+    return not bool
+end
+
