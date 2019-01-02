@@ -39,6 +39,7 @@ function init()
 	--  	object = Class:new()
 	--		object:init()
 	-- OR
+    --  -- DEPRECATED
 	--		object = Class:generate() 
 
     Window:init()
@@ -50,7 +51,7 @@ function init()
     Catalog:add("wolf", {"Canis lupus arctos", "Arctic wolf"})
     Catalog:add("test", {"Test entry", "yeah", "another"})
     --
-    --
+
     keymode = MOVEMENT
 
     longhouse = HouseStructure:new()
@@ -185,7 +186,7 @@ function love.update(dt)
 
     debugTable["movespeed"] = Window.move
     debugTable["keymode"] = keymode
-    debugTable["window"] = "(w=" .. g.getWidth() .. ", h=" .. g.getHeight() .. ")"
+    debugTable["window"] = "(" .. g.getWidth() .. "x" .. g.getHeight() .. ")"
 
     man:updateMovement()
 
