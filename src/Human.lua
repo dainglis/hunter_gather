@@ -91,7 +91,7 @@ function Human:updateMovement()
         if i ~= 0 then
             if dist({self.curX, self.curY}, {largeForest.trees[i].x, largeForest.trees[i].y}) 
                     <= largeForest.trees[i].size + 5 then
-                print("inside tree")
+                print("inside tree " .. i)
                -- self.newX = self.curX
                -- self.newY = self.curY
             end

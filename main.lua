@@ -29,6 +29,7 @@ lifeMatrix = {
 
 mouseX = 0; mouseY = 0; relativeX = 0; relativeY = 0
 
+
 function init()
 	-- 	initialization convention
 	-- 	static class 
@@ -43,6 +44,13 @@ function init()
     Window:init()
     Console:init()
 
+    Catalog:init()
+    -- TESTING CATALOG
+    Catalog:add("human", {"Homo sapiens", "Human"})
+    Catalog:add("wolf", {"Canis lupus arctos", "Arctic wolf"})
+    Catalog:add("test", {"Test entry", "yeah", "another"})
+    --
+    --
     keymode = MOVEMENT
 
     longhouse = HouseStructure:new()
@@ -58,6 +66,7 @@ function init()
     -- TESTING ADDING ROCKS
     quarry = RockFormation:new()
     quarry:generate()
+    --
 
     debugFlagState["debug"] = true
 
@@ -71,10 +80,6 @@ function init()
     print(welcome)
 end
 
-function generateCatalog()
-    cat = Catalog:new()
-    cat:add("human", "Homo sapiens", "Human")
-end
 
 function love.mousereleased(x, y, button, istouch)
     local modX, modY = Window:toAbsolutePosition(x, y)
@@ -83,12 +88,18 @@ function love.mousereleased(x, y, button, istouch)
 
 end
 
+
+-- 
 function love.textinput(text)
     if keymode == CONSOLE then  
         Console:append(text)
     end
 end
 
+
+-- love.keypressed
+-- input: string (key), number (scancode), boolean (isrepeat)
+--   built-in love function, executed when any keyboard key is pressed
 function love.keypressed(key, scancode, isrepeat)
     if keymode == CONSOLE then
         if key == "escape" then
@@ -121,9 +132,10 @@ function love.keypressed(key, scancode, isrepeat)
     end
 end
 
+
 -- love.wheelmoved
 -- input: number (x), number (y)
---  built-in love function, executed when mouse wheel is moved
+--   built-in love function, executed when mouse wheel is moved
 function love.wheelmoved(x, y)
     if y > 0 then   
         Window:modifyScaleIn()
@@ -132,33 +144,35 @@ function love.wheelmoved(x, y)
     end
 end
 
+
 -- love.load
---  built-in love function, executes on program startup
+-- input: nil
+--   built-in love function, executes on program startup
 function love.load()
     initDebugState()
     w.setMode(Window.width, Window.height)
     m.setVisible(false)
     k.setKeyRepeat(true)
 
-    generateCatalog()
-
     init()
 end
 
+
 -- love.quit
---  built-in love function, executes when an attempt 
---		to close the love process is called. 
---  	return false will close the current process, 
---		returning true will continue running the process
+-- input: nil
+--   built-in love function, executes when an attempt 
+--   to close the love process is called. 
+--   return false will close the current process, 
+--   returning true will continue running the process
 function love.quit()
     return false
 end
 
+
 -- love.update
 -- input: number (dt)
---
 --   built-in love function, executes each frame. parameter dt records the time between
---     the current and previous frame. 
+--   the current and previous frame. 
 function love.update(dt)
     debugTable["fps"] = love.timer.getFPS()
     debugTable["xmouse"] = "(" .. mouseX .. ", " .. mouseY .. ")"
@@ -215,6 +229,7 @@ function love.update(dt)
     end
     
 end
+
 
 -- love.draw
 --
@@ -304,3 +319,4 @@ function love.draw()
     --displays cursor
     g.rectangle('line', mouseX, mouseY, 2, 2, 0)
 end
+
