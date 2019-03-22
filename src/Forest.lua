@@ -2,7 +2,7 @@
 -- Contains Forest object definition and related methods
 Forest = {trees = {}, marker = 0}
 
-DEBUG_HEADER = "DEBUG (Forest): "
+DEBUG_HEADER_FOREST = "DEBUG (Forest): "
 
 -- Forest:new
 --   Forest constructor
@@ -27,11 +27,12 @@ end
 --   which does not create a new Forest instance. 
 function Forest:generate()
     --local f = Forest:new()
-    print(DEBUG_HEADER .. "Clearing forest...")
+    print(DEBUG_HEADER_FOREST .. "The forest currently has size " .. self:size())
+    print(DEBUG_HEADER_FOREST .. "Clearing forest...")
 	self:clear()
     forestGenerated = true
     
-    print(DEBUG_HEADER .. "Generating forest...")
+    print(DEBUG_HEADER_FOREST .. "Generating forest...")
     math.randomseed(os.time())
 
     -- generate thick patch in y = a/(x-p) + q pattern
@@ -60,7 +61,7 @@ function Forest:generate()
         self:addTree(Tree:new(x, y, r, false))
     end
 
-    print(DEBUG_HEADER .. "Generated a forest with " .. self:size() .. " trees")
+    print(DEBUG_HEADER_FOREST .. "Generated a forest with " .. self:size() .. " trees")
     --return f
 end
 function Forest:clear()

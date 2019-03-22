@@ -72,6 +72,8 @@ function init()
     debugFlagState["debug"] = true
 
 	man = Human:generate()
+    woman = Human:new(1920, 20, 30, "Michelle")
+
     largeForest = Forest:new()
 	largeForest:clear()
 	largeForest:generate()
@@ -86,6 +88,7 @@ function love.mousereleased(x, y, button, istouch)
     local modX, modY = Window:toAbsolutePosition(x, y)
     largeForest:checkClosestTree(modX, modY)
     man:startMovement(relativeX, relativeY)
+    woman:startMovement(relativeX + 10, relativeY + 10);
 
 end
 
@@ -189,6 +192,7 @@ function love.update(dt)
     debugTable["window"] = "(" .. g.getWidth() .. "x" .. g.getHeight() .. ")"
 
     man:updateMovement()
+    woman:updateMovement()
 
     -- lifeMatrix
     if debugFlagState["life"] then
@@ -273,6 +277,7 @@ function love.draw()
 
     -- Draw all humans
     man:draw()
+    woman:draw()
 
     --SCREEN OVERLAYS
     --draws nighttime overlay 
